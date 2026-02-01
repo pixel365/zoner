@@ -1,0 +1,9 @@
+vendor/
+bin/
+build/
+
+*.out
+*.log
+*.tgz
+*.txt
+.env
