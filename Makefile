@@ -1,4 +1,4 @@
-.PHONY: all tidy fa fmt lint
+.PHONY: all tidy fa fmt lint selfcrt
 
 all: tidy fa fmt lint
 
@@ -15,3 +15,11 @@ fmt:
 
 lint:
 	@golangci-lint run
+
+selfcrt:
+	openssl req -x509 -nodes -days 365 \
+      -newkey rsa:2048 \
+      -keyout server.key \
+      -out server.crt \
+      -config self-signed.dev.cnf
+
