@@ -7,3 +7,7 @@ build/
 *.tgz
 *.txt
 .env
+*.cnf
+!self-signed.dev.cnf
+*.crt
+*.key
