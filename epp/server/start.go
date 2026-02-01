@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/tls"
 	"net"
+
+	conn2 "github.com/pixel365/zoner/epp/server/internal/conn"
 )
 
 func (e *Epp) Start(ctx context.Context) error {
@@ -45,7 +47,7 @@ func (e *Epp) Start(ctx context.Context) error {
 }
 
 func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
-	connection := NewConnection(conn)
+	connection := conn2.NewConnection(conn)
 	defer func() {
 		if err := connection.Close(); err != nil {
 			e.Log.Error("close connection error", err)
