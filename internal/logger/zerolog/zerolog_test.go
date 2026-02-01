@@ -8,8 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pixel365/zoner/internal/logger"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/pixel365/zoner/internal/logger"
 )
 
 type w struct{}

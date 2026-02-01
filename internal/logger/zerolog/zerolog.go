@@ -7,8 +7,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/pixel365/zoner/internal/logger"
 	"github.com/rs/zerolog"
+
+	"github.com/pixel365/zoner/internal/logger"
 )
 
 type Log struct {
