@@ -3,6 +3,7 @@ module github.com/pixel365/zoner
 go 1.25
 
 require (
+	github.com/goccy/go-yaml v1.19.2
 	github.com/joho/godotenv v1.5.1
 	github.com/rs/zerolog v1.34.0
 	github.com/stretchr/testify v1.11.1

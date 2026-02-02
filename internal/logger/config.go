@@ -2,6 +2,23 @@ package logger
 
 import "os"
 
+type LogLevel string
+type LogLevelInt int8
+
+const (
+	Debug LogLevel = "debug"
+	Info  LogLevel = "info"
+	Warn  LogLevel = "warn"
+	Error LogLevel = "error"
+)
+
+const (
+	LevelDebug LogLevelInt = iota
+	LevelInfo
+	LevelWarn
+	LevelError
+)
+
 type ConfigOption func(*Config)
 
 type Service struct {
@@ -16,6 +33,7 @@ type Config struct {
 	Service      Service
 	EventDataset string
 	LoggerName   string
+	LogLevel     LogLevelInt
 }
 
 func NewConfig(opts ...ConfigOption) *Config {
@@ -77,5 +95,26 @@ func WithService(service Service) ConfigOption {
 func WithEventDataset(dataset string) ConfigOption {
 	return func(cfg *Config) {
 		cfg.EventDataset = dataset
+	}
+}
+
+func WithLoggerName(name string) ConfigOption {
+	return func(cfg *Config) {
+		cfg.LoggerName = name
+	}
+}
+
+func WithLogLevel(level LogLevel) ConfigOption {
+	return func(cfg *Config) {
+		switch level {
+		case Debug:
+			cfg.LogLevel = LevelDebug
+		case Info:
+			cfg.LogLevel = LevelInfo
+		case Warn:
+			cfg.LogLevel = LevelWarn
+		case Error:
+			cfg.LogLevel = LevelError
+		}
 	}
 }

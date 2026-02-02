@@ -5,11 +5,12 @@ import (
 	"crypto/tls"
 	"net"
 
+	"github.com/pixel365/zoner/epp/server/internal/command"
 	conn2 "github.com/pixel365/zoner/epp/server/internal/conn"
 )
 
 func (e *Epp) Start(ctx context.Context) error {
-	ln, err := tls.Listen("tcp", e.Addr, e.TLSConfig)
+	ln, err := tls.Listen("tcp", e.Config.ListenAddr, e.TLSConfig)
 	if err != nil {
 		return err
 	}
@@ -47,12 +48,18 @@ func (e *Epp) Start(ctx context.Context) error {
 }
 
 func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
-	connection := conn2.NewConnection(conn)
+	connection := conn2.NewConnection(conn, &e.Config)
 	defer func() {
 		if err := connection.Close(); err != nil {
 			e.Log.Error("close connection error", err)
 		}
 	}()
+
+	var greeting command.Greeting
+	if err := connection.WriteFrame(ctx, greeting.Bytes(e.Config.Greeting)); err != nil {
+		e.Log.Error("write greeting error", err)
+		return
+	}
 
 	for {
 		select {

@@ -10,13 +10,22 @@ import (
 type Epp struct {
 	Log       logger.Logger
 	TLSConfig *tls.Config
-	Addr      string
+	Config    config.Epp
 }
 
-func NewEpp(config *config.Config) *Epp {
+func NewEpp(cfg *config.Config, log logger.Logger) *Epp {
+	cert, err := tls.LoadX509KeyPair(cfg.TLS.CertPath, cfg.TLS.KeyPath)
+	if err != nil {
+		return nil
+	}
+
 	return &Epp{
-		Log:       config.Log,
-		TLSConfig: config.TLSConfig,
-		Addr:      config.Addr,
+		Log:    log,
+		Config: cfg.Epp,
+		TLSConfig: &tls.Config{
+			MinVersion:   tls.VersionTLS12,
+			MaxVersion:   tls.VersionTLS13,
+			Certificates: []tls.Certificate{cert},
+		},
 	}
 }

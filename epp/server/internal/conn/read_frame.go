@@ -39,16 +39,17 @@ func (c *Connection) ReadFrame(ctx context.Context) ([]byte, error) {
 		return nil, err
 	}
 
-	return nil, nil
+	return payload, nil
 }
 
 func (c *Connection) setReadDeadline(ctx context.Context) error {
-	if c.readTimeout > 0 {
-		_ = c.conn.SetReadDeadline(time.Now().Add(c.readTimeout))
-	}
-
 	if ddl, ok := ctx.Deadline(); ok {
 		_ = c.conn.SetReadDeadline(ddl)
+		return nil
+	}
+
+	if c.readTimeout > 0 {
+		_ = c.conn.SetReadDeadline(time.Now().Add(c.readTimeout))
 		return nil
 	}
 

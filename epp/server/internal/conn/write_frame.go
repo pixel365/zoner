@@ -39,12 +39,13 @@ func (c *Connection) WriteFrame(ctx context.Context, frame []byte) error {
 }
 
 func (c *Connection) setWriteDeadline(ctx context.Context) error {
-	if c.writeTimeout > 0 {
-		_ = c.conn.SetWriteDeadline(time.Now().Add(c.writeTimeout))
+	if ddl, ok := ctx.Deadline(); ok {
+		_ = c.conn.SetWriteDeadline(ddl)
+		return nil
 	}
 
-	if dl, ok := ctx.Deadline(); ok {
-		_ = c.conn.SetWriteDeadline(dl)
+	if c.writeTimeout > 0 {
+		_ = c.conn.SetWriteDeadline(time.Now().Add(c.writeTimeout))
 		return nil
 	}
 

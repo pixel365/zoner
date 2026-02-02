@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -14,14 +13,9 @@ import (
 
 type Log struct {
 	logger zerolog.Logger
-	debug  bool
 }
 
 func (o *Log) Debug(msg string, params ...any) {
-	if !o.debug {
-		return
-	}
-
 	if len(params) > 0 {
 		o.logger.Debug().Msg(fmt.Sprintf(msg, params...))
 		return
@@ -69,10 +63,7 @@ func (o *Log) Component(name string) logger.Logger {
 		Str("log.logger", name).
 		Logger()
 
-	return &Log{
-		logger: l,
-		debug:  o.debug,
-	}
+	return &Log{logger: l}
 }
 
 func (o *Log) Func(name string) logger.Logger {
@@ -84,10 +75,7 @@ func (o *Log) Func(name string) logger.Logger {
 		Str("log.origin.function", name).
 		Logger()
 
-	return &Log{
-		logger: l,
-		debug:  o.debug,
-	}
+	return &Log{logger: l}
 }
 
 func NewLogger(cfg *logger.Config, writers ...io.Writer) *Log {
@@ -104,6 +92,7 @@ func NewLogger(cfg *logger.Config, writers ...io.Writer) *Log {
 
 	multi := zerolog.MultiLevelWriter(outs...)
 	base := zerolog.New(multi).
+		Level(zerolog.Level(cfg.LogLevel)).
 		With().
 		Timestamp().
 		Str("ecs.version", cfg.ECSVersion).
@@ -120,10 +109,5 @@ func NewLogger(cfg *logger.Config, writers ...io.Writer) *Log {
 		base = base.With().Str("log.logger", cfg.LoggerName).Logger()
 	}
 
-	debug, _ := strconv.ParseBool(os.Getenv("DEBUG"))
-
-	return &Log{
-		logger: base,
-		debug:  debug,
-	}
+	return &Log{logger: base}
 }

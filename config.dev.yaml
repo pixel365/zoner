@@ -1,0 +1,30 @@
+tls:
+  serverName: "localhost"
+  certPath: "./server.crt"
+  keyPath: "./server.key"
+
+logLevel: "debug"
+
+epp:
+  listenAddr: ":7000"
+  idleTimeout: 1800
+  readTimeout: 30
+  writeTimeout: 10
+
+  greeting:
+    sv_id: "zoner"
+    versions:
+      - "1.0"
+    languages:
+      - "en"
+    extensions: []
+    dcp:
+      access: "all"
+      statements:
+        - purpose:
+            - "admin"
+            - "prov"
+          recipient:
+            - "ours"
+            - "public"
+          retention: "none"

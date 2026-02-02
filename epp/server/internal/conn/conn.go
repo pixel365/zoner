@@ -4,26 +4,10 @@ import (
 	"net"
 	"time"
 
-	"github.com/pixel365/zoner/internal/stringutils"
+	"github.com/pixel365/zoner/epp/config"
 )
 
 const minFrameLength = 4
-
-var (
-	frameReadTtl  time.Duration
-	frameWriteTtl time.Duration
-	connIdleTtl   time.Duration
-)
-
-func init() {
-	readTtl := stringutils.GetPositiveIntFromEnv("EPP_FRAME_READ_TTL", 30)
-	writeTtl := stringutils.GetPositiveIntFromEnv("EPP_FRAME_WRITE_TTL", 10)
-	idleTtl := stringutils.GetPositiveIntFromEnv("EPP_CONN_IDLE_TTL", 1800) // default 30 minutes
-
-	frameReadTtl = time.Duration(readTtl) * time.Second
-	frameWriteTtl = time.Duration(writeTtl) * time.Second
-	connIdleTtl = time.Duration(idleTtl) * time.Second
-}
 
 type Connection struct {
 	conn         net.Conn
@@ -40,12 +24,12 @@ func (c *Connection) Close() error {
 	return c.conn.Close()
 }
 
-func NewConnection(conn net.Conn) *Connection {
+func NewConnection(conn net.Conn, cfg *config.Epp) *Connection {
 	return &Connection{
 		conn:         conn,
 		maxFrameSize: 4 * 1024 * 1024, // 4MB
-		readTimeout:  frameReadTtl,
-		writeTimeout: frameWriteTtl,
-		idleTimeout:  connIdleTtl,
+		readTimeout:  time.Duration(cfg.ReadTimeout) * time.Second,
+		writeTimeout: time.Duration(cfg.WriteTimeout) * time.Second,
+		idleTimeout:  time.Duration(cfg.IdleTimeout) * time.Second,
 	}
 }
