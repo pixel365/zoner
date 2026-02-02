@@ -111,6 +111,6 @@ func (s *Statement) WriteXML(b *strings.Builder) {
 	b.WriteString(`<retention><` + s.Retention + `/></retention>`)
 
 	if s.Expiry != nil {
-		b.WriteString(`<expiry>` + s.Expiry.String() + `</expiry>`)
+		b.WriteString(`<expiry><` + s.Expiry.String() + `/></expiry>`)
 	}
 }
