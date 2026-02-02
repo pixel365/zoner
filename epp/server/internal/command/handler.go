@@ -3,5 +3,5 @@ package command
 import "context"
 
 type Handler interface {
-	Handle(context.Context, Commander)
+	Handle(context.Context, Command)
 }

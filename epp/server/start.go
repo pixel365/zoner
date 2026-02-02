@@ -3,9 +3,12 @@ package server
 import (
 	"context"
 	"crypto/tls"
+	"errors"
+	"io"
 	"net"
 
 	"github.com/pixel365/zoner/epp/server/internal/command"
+	parser2 "github.com/pixel365/zoner/epp/server/internal/command/parser"
 	conn2 "github.com/pixel365/zoner/epp/server/internal/conn"
 )
 
@@ -61,6 +64,8 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 		return
 	}
 
+	parser := parser2.CommandParser{}
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -68,14 +73,46 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 		default:
 			frame, err := connection.ReadFrame(ctx)
 			if err != nil {
+				if errors.Is(err, io.EOF) {
+					return
+				}
+
 				e.Log.Error("read frame error", err)
 				return
 			}
 
-			if err = connection.WriteFrame(ctx, frame); err != nil {
+			cmd, err := parser.Parse(frame)
+			if err != nil {
+				//TODO: send error response
+				e.Log.Error("parse command error", err)
+				continue
+			}
+
+			if err = sendResponse(ctx, connection, cmd, e); err != nil {
 				e.Log.Error("write frame error", err)
 				return
 			}
 		}
 	}
+}
+
+func sendResponse(
+	ctx context.Context,
+	connection *conn2.Connection,
+	cmd command.Command,
+	e *Epp,
+) error {
+	if cmd.Name() == command.HelloCommand {
+		var greeting command.Greeting
+		if err := connection.WriteFrame(ctx, greeting.Bytes(e.Config.Greeting)); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	if err := connection.WriteFrame(ctx, cmd.AsBytes()); err != nil {
+		return err
+	}
+
+	return nil
 }

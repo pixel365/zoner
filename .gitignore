@@ -6,6 +6,7 @@ build/
 *.log
 *.tgz
 *.txt
+*.xml
 .env
 *.cnf
 !self-signed.dev.cnf
