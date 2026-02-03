@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestValidHello(t *testing.T) {
-	content, err := os.ReadFile("testdata/hello_valid.xml")
+func TestValidLogout(t *testing.T) {
+	content, err := os.ReadFile("testdata/logout_valid.xml")
 	require.NoError(t, err)
 
 	p := CmdParser{}
@@ -19,8 +19,8 @@ func TestValidHello(t *testing.T) {
 	require.NoError(t, cmd.Validate())
 }
 
-func TestInvalidHello(t *testing.T) {
-	content, err := os.ReadFile("testdata/hello_invalid.xml")
+func TestInvalidLogout(t *testing.T) {
+	content, err := os.ReadFile("testdata/logout_invalid.xml")
 	require.NoError(t, err)
 
 	p := CmdParser{}
@@ -28,5 +28,5 @@ func TestInvalidHello(t *testing.T) {
 
 	require.Error(t, err)
 
-	assert.Contains(t, err.Error(), "<hello> must be empty")
+	assert.Contains(t, err.Error(), "<logout> must be empty")
 }

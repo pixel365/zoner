@@ -109,7 +109,8 @@ func sendResponse(
 		return nil
 	}
 
-	if err := connection.WriteFrame(ctx, cmd.AsBytes()); err != nil {
+	var response command.Responser
+	if err := connection.WriteFrame(ctx, response.AsBytes()); err != nil {
 		return err
 	}
 

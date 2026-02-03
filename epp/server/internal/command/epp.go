@@ -6,6 +6,7 @@ import (
 
 	"github.com/pixel365/zoner/epp/server/internal/command/hello"
 	"github.com/pixel365/zoner/epp/server/internal/command/login"
+	"github.com/pixel365/zoner/epp/server/internal/command/logout"
 )
 
 type EPP struct {
@@ -14,6 +15,9 @@ type EPP struct {
 
 	// Login https://datatracker.ietf.org/doc/html/rfc5730#section-2.9.1.1
 	Login *login.Login `xml:"urn:ietf:params:xml:ns:epp-1.0 command>login"`
+
+	// Logout https://datatracker.ietf.org/doc/html/rfc5730#section-2.9.1.2
+	Logout *logout.Logout `xml:"urn:ietf:params:xml:ns:epp-1.0 command>logout"`
 
 	// XMLName https://datatracker.ietf.org/doc/html/rfc5730#section-2.2
 	XMLName xml.Name `xml:"urn:ietf:params:xml:ns:epp-1.0 epp"`
@@ -29,6 +33,10 @@ func (e *EPP) Validate() error { //TODO: change to error response
 	}
 
 	if e.Login != nil {
+		notNilCommands++
+	}
+
+	if e.Logout != nil {
 		notNilCommands++
 	}
 
@@ -58,6 +66,10 @@ func (e *EPP) Command() (Command, error) {
 
 	if e.Login != nil {
 		return e.Login, nil
+	}
+
+	if e.Logout != nil {
+		return e.Logout, nil
 	}
 
 	return nil, errors.New("unknown command")

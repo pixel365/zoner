@@ -1,4 +1,4 @@
-package hello
+package logout
 
 import (
 	"bytes"
@@ -6,17 +6,17 @@ import (
 	"fmt"
 )
 
-type Hello struct{}
+type Logout struct{}
 
-func (h *Hello) Name() string {
-	return "hello"
+func (l *Logout) Name() string {
+	return "logout"
 }
 
-func (h *Hello) Validate() error {
+func (l *Logout) Validate() error {
 	return nil
 }
 
-func (h *Hello) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+func (l *Logout) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	for {
 		tok, err := d.Token()
 		if err != nil {
@@ -30,10 +30,10 @@ func (h *Hello) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 			}
 		case xml.CharData:
 			if len(bytes.TrimSpace(t)) != 0 {
-				return fmt.Errorf("<hello> must be empty")
+				return fmt.Errorf("<logout> must be empty")
 			}
 		default:
-			return fmt.Errorf("<hello> must be empty")
+			return fmt.Errorf("<logout> must be empty")
 		}
 	}
 }

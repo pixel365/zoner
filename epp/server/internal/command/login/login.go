@@ -14,14 +14,6 @@ func (l Login) Name() string {
 	return "login"
 }
 
-func (l Login) ClTRID() string {
-	return ""
-}
-
-func (l Login) AsBytes() []byte {
-	return nil
-}
-
 func (l Login) Validate() error {
 	if l.ClientID == "" {
 		return errors.New("client id is empty")
