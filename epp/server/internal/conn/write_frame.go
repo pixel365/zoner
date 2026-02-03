@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"math"
 	"net"
 	"time"
 )
@@ -14,8 +15,12 @@ func (c *Connection) WriteFrame(ctx context.Context, frame []byte) error {
 	}
 	defer c.resetWriteDeadline()
 
-	//nolint:gosec
-	total := uint32(len(frame)) + minFrameLength
+	total64 := uint64(len(frame)) + uint64(minFrameLength)
+	if total64 > math.MaxUint32 {
+		return fmt.Errorf("frame too large")
+	}
+
+	total := uint32(total64)
 	if total < minFrameLength {
 		return fmt.Errorf("invalid frame length: %d", total)
 	}
