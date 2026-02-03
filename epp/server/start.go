@@ -8,7 +8,6 @@ import (
 	"net"
 
 	"github.com/pixel365/zoner/epp/server/internal/command"
-	parser2 "github.com/pixel365/zoner/epp/server/internal/command/parser"
 	conn2 "github.com/pixel365/zoner/epp/server/internal/conn"
 )
 
@@ -64,7 +63,7 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 		return
 	}
 
-	parser := parser2.CommandParser{}
+	parser := command.CmdParser{}
 
 	for {
 		select {
@@ -102,7 +101,7 @@ func sendResponse(
 	cmd command.Command,
 	e *Epp,
 ) error {
-	if cmd.Name() == command.HelloCommand {
+	if cmd.Name() == "hello" {
 		var greeting command.Greeting
 		if err := connection.WriteFrame(ctx, greeting.Bytes(e.Config.Greeting)); err != nil {
 			return err
