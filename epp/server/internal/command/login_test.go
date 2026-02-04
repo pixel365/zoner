@@ -8,7 +8,7 @@ import (
 )
 
 func TestLogin(t *testing.T) {
-	content, err := os.ReadFile("testdata/login.xml")
+	content, err := os.ReadFile("testdata/login/valid.xml")
 	require.NoError(t, err)
 
 	p := CmdParser{}

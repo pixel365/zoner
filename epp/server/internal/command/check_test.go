@@ -9,7 +9,7 @@ import (
 )
 
 func TestValidCheck(t *testing.T) {
-	content, err := os.ReadFile("testdata/check_valid.xml")
+	content, err := os.ReadFile("testdata/check/valid.xml")
 	require.NoError(t, err)
 
 	p := CmdParser{}
@@ -20,7 +20,7 @@ func TestValidCheck(t *testing.T) {
 }
 
 func TestInvalidCheck(t *testing.T) {
-	content, err := os.ReadFile("testdata/check_invalid.xml")
+	content, err := os.ReadFile("testdata/check/invalid.xml")
 	require.NoError(t, err)
 
 	p := CmdParser{}

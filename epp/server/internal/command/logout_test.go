@@ -9,7 +9,7 @@ import (
 )
 
 func TestValidLogout(t *testing.T) {
-	content, err := os.ReadFile("testdata/logout_valid.xml")
+	content, err := os.ReadFile("testdata/logout/valid.xml")
 	require.NoError(t, err)
 
 	p := CmdParser{}
@@ -20,7 +20,7 @@ func TestValidLogout(t *testing.T) {
 }
 
 func TestInvalidLogout(t *testing.T) {
-	content, err := os.ReadFile("testdata/logout_invalid.xml")
+	content, err := os.ReadFile("testdata/logout/invalid.xml")
 	require.NoError(t, err)
 
 	p := CmdParser{}

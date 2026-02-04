@@ -6,6 +6,7 @@ import (
 
 	"github.com/pixel365/zoner/epp/server/internal/command/check"
 	"github.com/pixel365/zoner/epp/server/internal/command/hello"
+	"github.com/pixel365/zoner/epp/server/internal/command/info"
 	"github.com/pixel365/zoner/epp/server/internal/command/login"
 	"github.com/pixel365/zoner/epp/server/internal/command/logout"
 )
@@ -22,6 +23,9 @@ type EPP struct {
 
 	// Check https://datatracker.ietf.org/doc/html/rfc5730#section-2.9.2.1
 	Check *check.Check `xml:"urn:ietf:params:xml:ns:epp-1.0 command>check"`
+
+	// Info https://datatracker.ietf.org/doc/html/rfc5730#section-2.9.2.2
+	Info *info.Info `xml:"urn:ietf:params:xml:ns:epp-1.0 command>info"`
 
 	// XMLName https://datatracker.ietf.org/doc/html/rfc5730#section-2.2
 	XMLName xml.Name `xml:"urn:ietf:params:xml:ns:epp-1.0 epp"`
@@ -48,6 +52,10 @@ func (e *EPP) Validate() error { //TODO: change to error response
 		notNilCommands++
 	}
 
+	if e.Info != nil {
+		notNilCommands++
+	}
+
 	if notNilCommands != 1 {
 		return errors.New("exactly one command must be present")
 	}
@@ -62,6 +70,18 @@ func (e *EPP) validate() error {
 
 	if e.Login != nil {
 		return e.Login.Validate()
+	}
+
+	if e.Logout != nil {
+		return e.Logout.Validate()
+	}
+
+	if e.Check != nil {
+		return e.Check.Validate()
+	}
+
+	if e.Info != nil {
+		return e.Info.Validate()
 	}
 
 	return nil
@@ -82,6 +102,10 @@ func (e *EPP) Command() (Command, error) {
 
 	if e.Check != nil {
 		return e.Check, nil
+	}
+
+	if e.Info != nil {
+		return e.Info, nil
 	}
 
 	return nil, errors.New("unknown command")
