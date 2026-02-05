@@ -1,6 +1,10 @@
 package login
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/pixel365/zoner/epp/server/command/command"
+)
 
 type Login struct {
 	Options     Options `xml:"options"`
@@ -10,8 +14,12 @@ type Login struct {
 	Svc         Svc     `xml:"svcs"`
 }
 
-func (l Login) Name() string {
-	return "login"
+func (l Login) Name() command.CommandName {
+	return command.Login
+}
+
+func (l Login) NeedAuth() bool {
+	return false
 }
 
 func (l Login) Validate() error {

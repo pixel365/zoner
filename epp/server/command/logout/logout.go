@@ -4,12 +4,18 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
+
+	"github.com/pixel365/zoner/epp/server/command/command"
 )
 
 type Logout struct{}
 
-func (l *Logout) Name() string {
-	return "logout"
+func (l *Logout) Name() command.CommandName {
+	return command.Logout
+}
+
+func (l *Logout) NeedAuth() bool {
+	return true
 }
 
 func (l *Logout) Validate() error {

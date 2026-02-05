@@ -3,6 +3,8 @@ package check
 import (
 	"encoding/xml"
 	"errors"
+
+	"github.com/pixel365/zoner/epp/server/command/command"
 )
 
 type Check struct {
@@ -13,8 +15,12 @@ type Domain struct {
 	Name string `xml:",chardata"`
 }
 
-func (c *Check) Name() string {
-	return "check"
+func (c *Check) Name() command.CommandName {
+	return command.Check
+}
+
+func (c *Check) NeedAuth() bool {
+	return true
 }
 
 func (c *Check) Validate() error {

@@ -4,12 +4,13 @@ import (
 	"encoding/xml"
 	"errors"
 
-	"github.com/pixel365/zoner/epp/server/internal/command/check"
-	"github.com/pixel365/zoner/epp/server/internal/command/hello"
-	"github.com/pixel365/zoner/epp/server/internal/command/info"
-	"github.com/pixel365/zoner/epp/server/internal/command/login"
-	"github.com/pixel365/zoner/epp/server/internal/command/logout"
-	"github.com/pixel365/zoner/epp/server/internal/command/poll"
+	"github.com/pixel365/zoner/epp/server/command/check"
+	command2 "github.com/pixel365/zoner/epp/server/command/command"
+	"github.com/pixel365/zoner/epp/server/command/hello"
+	"github.com/pixel365/zoner/epp/server/command/info"
+	"github.com/pixel365/zoner/epp/server/command/login"
+	"github.com/pixel365/zoner/epp/server/command/logout"
+	"github.com/pixel365/zoner/epp/server/command/poll"
 )
 
 type EPP struct {
@@ -99,7 +100,7 @@ func (e *EPP) validate() error {
 	return nil
 }
 
-func (e *EPP) Command() (Command, error) {
+func (e *EPP) Command() (command2.Commander, error) {
 	if e.Hello != nil {
 		return e.Hello, nil
 	}

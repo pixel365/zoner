@@ -2,6 +2,8 @@ package info
 
 import (
 	"errors"
+
+	"github.com/pixel365/zoner/epp/server/command/command"
 )
 
 type Info struct {
@@ -10,8 +12,12 @@ type Info struct {
 	Host    *Host    `xml:"urn:ietf:params:xml:ns:host-1.0 info"`
 }
 
-func (i *Info) Name() string {
-	return "info"
+func (i *Info) Name() command.CommandName {
+	return command.Info
+}
+
+func (i *Info) NeedAuth() bool {
+	return true
 }
 
 func (i *Info) Validate() error {

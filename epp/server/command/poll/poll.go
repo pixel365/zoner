@@ -1,13 +1,21 @@
 package poll
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/pixel365/zoner/epp/server/command/command"
+)
 
 type Poll struct {
 	Op string `xml:"op,attr"`
 }
 
-func (p *Poll) Name() string {
-	return "poll"
+func (p *Poll) Name() command.CommandName {
+	return command.Poll
+}
+
+func (p *Poll) NeedAuth() bool {
+	return true
 }
 
 func (p *Poll) Validate() error {

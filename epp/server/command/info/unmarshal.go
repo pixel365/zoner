@@ -43,7 +43,7 @@ func (i *Info) handleToken(
 ) (bool, error) {
 	switch t := tok.(type) {
 	case xml.StartElement:
-		if t.Name.Local != i.Name() {
+		if t.Name.Local != i.Name().String() {
 			return false, errors.New("unexpected element inside <info>: " + t.Name.Local)
 		}
 

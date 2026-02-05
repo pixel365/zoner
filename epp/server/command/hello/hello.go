@@ -4,12 +4,18 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
+
+	"github.com/pixel365/zoner/epp/server/command/command"
 )
 
 type Hello struct{}
 
-func (h *Hello) Name() string {
-	return "hello"
+func (h *Hello) Name() command.CommandName {
+	return command.Hello
+}
+
+func (h *Hello) NeedAuth() bool {
+	return false
 }
 
 func (h *Hello) Validate() error {
