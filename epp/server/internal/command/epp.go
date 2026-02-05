@@ -9,6 +9,7 @@ import (
 	"github.com/pixel365/zoner/epp/server/internal/command/info"
 	"github.com/pixel365/zoner/epp/server/internal/command/login"
 	"github.com/pixel365/zoner/epp/server/internal/command/logout"
+	"github.com/pixel365/zoner/epp/server/internal/command/poll"
 )
 
 type EPP struct {
@@ -26,6 +27,9 @@ type EPP struct {
 
 	// Info https://datatracker.ietf.org/doc/html/rfc5730#section-2.9.2.2
 	Info *info.Info `xml:"urn:ietf:params:xml:ns:epp-1.0 command>info"`
+
+	// Poll https://datatracker.ietf.org/doc/html/rfc5730#section-2.9.2.3
+	Poll *poll.Poll `xml:"urn:ietf:params:xml:ns:epp-1.0 command>poll"`
 
 	// XMLName https://datatracker.ietf.org/doc/html/rfc5730#section-2.2
 	XMLName xml.Name `xml:"urn:ietf:params:xml:ns:epp-1.0 epp"`
@@ -53,6 +57,10 @@ func (e *EPP) Validate() error { //TODO: change to error response
 	}
 
 	if e.Info != nil {
+		notNilCommands++
+	}
+
+	if e.Poll != nil {
 		notNilCommands++
 	}
 
@@ -84,6 +92,10 @@ func (e *EPP) validate() error {
 		return e.Info.Validate()
 	}
 
+	if e.Poll != nil {
+		return e.Poll.Validate()
+	}
+
 	return nil
 }
 
@@ -106,6 +118,10 @@ func (e *EPP) Command() (Command, error) {
 
 	if e.Info != nil {
 		return e.Info, nil
+	}
+
+	if e.Poll != nil {
+		return e.Poll, nil
 	}
 
 	return nil, errors.New("unknown command")
