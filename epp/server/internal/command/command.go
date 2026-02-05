@@ -5,6 +5,6 @@ type Command interface {
 	Validate() error
 }
 
-type Responser interface {
+type Response interface {
 	AsBytes() []byte
 }
