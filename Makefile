@@ -1,4 +1,4 @@
-.PHONY: all tidy fa fmt lint selfcrt
+.PHONY: all tidy fa fmt lint selfcrt test
 
 all: tidy fa fmt lint
 
@@ -15,6 +15,9 @@ fmt:
 
 lint:
 	@golangci-lint run
+
+test:
+	@go test ./internal/... ./epp/... ./cmd/...
 
 selfcrt:
 	openssl req -x509 -nodes -days 365 \

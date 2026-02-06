@@ -14,6 +14,7 @@ const (
 	Check    CommandName = "check"
 	Info     CommandName = "info"
 	Poll     CommandName = "poll"
+	Transfer CommandName = "transfer"
 )
 
 type Commander interface {

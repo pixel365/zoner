@@ -3,6 +3,7 @@ package zerolog
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -39,7 +40,10 @@ func TestNewLogger(t *testing.T) {
 	writers := make([]io.Writer, 0, 1)
 	writers = append(writers, &w{})
 
-	l := NewLogger(logger.NewConfig(), writers...)
+	cfg := logger.NewConfig(
+		logger.WithLogLevel(logger.Debug),
+	)
+	l := NewLogger(cfg, writers...)
 
 	assert.NotNil(t, l)
 
@@ -50,18 +54,25 @@ func TestNewLogger(t *testing.T) {
 	i := 0
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		i++
+		txt := scanner.Text()
+
+		fmt.Println(txt)
+
 		switch i {
+		case 0:
+			assert.True(t, strings.HasSuffix(txt, "\"message\":\"a\"}"))
 		case 1:
-			assert.True(t, strings.HasSuffix(scanner.Text(), "\"message\":\"b\"}"))
+			assert.True(t, strings.HasSuffix(txt, "\"message\":\"b\"}"))
 		case 2:
-			assert.True(t, strings.HasSuffix(scanner.Text(), "\"message\":\"c\"}"))
+			assert.True(t, strings.HasSuffix(txt, "\"message\":\"c\"}"))
 		}
+
+		i++
 	}
 
 	if err := scanner.Err(); err != nil {
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, 2, i)
+	assert.Equal(t, 3, i)
 }
