@@ -4,12 +4,13 @@ import (
 	"errors"
 
 	"github.com/pixel365/zoner/epp/server/command/command"
+	"github.com/pixel365/zoner/epp/server/command/internal"
 )
 
 type Info struct {
-	Domain  *Domain  `xml:"urn:ietf:params:xml:ns:domain-1.0 info"`
-	Contact *Contact `xml:"urn:ietf:params:xml:ns:contact-1.0 info"`
-	Host    *Host    `xml:"urn:ietf:params:xml:ns:host-1.0 info"`
+	Domain  *internal.Domain  `xml:"urn:ietf:params:xml:ns:domain-1.0 info"`
+	Contact *internal.Contact `xml:"urn:ietf:params:xml:ns:contact-1.0 info"`
+	Host    *internal.Host    `xml:"urn:ietf:params:xml:ns:host-1.0 info"`
 }
 
 func (i *Info) Name() command.CommandName {

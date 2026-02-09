@@ -3,11 +3,13 @@ package transfer
 import (
 	"encoding/xml"
 	"errors"
+
+	"github.com/pixel365/zoner/epp/server/command/internal"
 )
 
 type Contact struct {
-	AuthInfo *AuthInfo `xml:"authInfo,omitempty"`
-	ID       string    `xml:"id"`
+	AuthInfo *internal.AuthInfo `xml:"authInfo,omitempty"`
+	ID       string             `xml:"id"`
 }
 
 func (c *Contact) Validate(_ string) error {
@@ -21,7 +23,7 @@ func (c *Contact) Validate(_ string) error {
 }
 
 type contactTransferXML struct {
-	AuthInfo *AuthInfo `xml:"authInfo,omitempty"`
-	XMLName  xml.Name  `xml:"urn:ietf:params:xml:ns:contact-1.0 transfer"`
-	ID       string    `xml:"id"`
+	AuthInfo *internal.AuthInfo `xml:"authInfo,omitempty"`
+	XMLName  xml.Name           `xml:"urn:ietf:params:xml:ns:contact-1.0 transfer"`
+	ID       string             `xml:"id"`
 }

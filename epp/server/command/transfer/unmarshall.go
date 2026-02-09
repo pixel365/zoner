@@ -3,11 +3,8 @@ package transfer
 import (
 	"encoding/xml"
 	"errors"
-)
 
-const (
-	nsDomain  = "urn:ietf:params:xml:ns:domain-1.0"
-	nsContact = "urn:ietf:params:xml:ns:contact-1.0"
+	"github.com/pixel365/zoner/epp/server/command/internal"
 )
 
 func (t *Transfer) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
@@ -76,7 +73,7 @@ func (t *Transfer) handleToken(
 
 func (t *Transfer) decodeObjectTransfer(d *xml.Decoder, token *xml.StartElement) error {
 	switch token.Name.Space {
-	case nsDomain:
+	case internal.NsDomain:
 		var x domainTransferXML
 		if err := d.DecodeElement(&x, token); err != nil {
 			return err
@@ -86,7 +83,7 @@ func (t *Transfer) decodeObjectTransfer(d *xml.Decoder, token *xml.StartElement)
 
 		return nil
 
-	case nsContact:
+	case internal.NsContact:
 		var x contactTransferXML
 		if err := d.DecodeElement(&x, token); err != nil {
 			return err
