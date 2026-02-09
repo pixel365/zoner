@@ -8,6 +8,7 @@ import (
 )
 
 type PostalInfoType string
+type DiscloseFlag uint8
 
 const (
 	Loc PostalInfoType = "loc"
@@ -46,12 +47,12 @@ type ContactPhone struct {
 
 type Disclose struct {
 	Items []DiscloseItem
-	Flag  int
+	Flag  DiscloseFlag
 }
 
 type DiscloseItem struct {
 	Name string
-	Type string
+	Type PostalInfoType
 }
 
 type contactCreateXML struct {
@@ -92,11 +93,11 @@ type discloseXML struct {
 	Voice *struct{}      `xml:"voice,omitempty"`
 	Fax   *struct{}      `xml:"fax,omitempty"`
 	Email *struct{}      `xml:"email,omitempty"`
-	Flag  int            `xml:"flag,attr"`
+	Flag  DiscloseFlag   `xml:"flag,attr"`
 }
 
 type disclosePIXML struct {
-	Type string `xml:"type,attr,omitempty"`
+	Type PostalInfoType `xml:"type,attr,omitempty"`
 }
 
 func (c *Contact) Validate() error {
@@ -127,6 +128,7 @@ func (c *Contact) Validate() error {
 	if c.Disclose.Flag != 0 && c.Disclose.Flag != 1 {
 		return errors.New("contact:disclose flag must be 0 or 1")
 	}
+
 	for _, it := range c.Disclose.Items {
 		if it.Name == "" {
 			return errors.New("contact:disclose item name is empty")
@@ -155,6 +157,10 @@ func (c *Contact) validatePostInfo() error {
 
 		if c.PostalInfo[i].Addr.Cc == "" {
 			return errors.New("contact:postalInfo/contact:addr/contact:cc is required")
+		}
+
+		if len(c.PostalInfo[i].Addr.Cc) != 2 {
+			return errors.New("contact:postalInfo/contact:addr/contact:cc must be 2 chars")
 		}
 
 		if len(c.PostalInfo[i].Addr.Street) > 3 {

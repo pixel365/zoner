@@ -34,8 +34,8 @@ type hostCreateXML struct {
 }
 
 type hostAddrXML struct {
-	IP    string `xml:"ip,attr,omitempty"`
-	Value string `xml:",chardata"`
+	IP    HostAddrType `xml:"ip,attr,omitempty"`
+	Value string       `xml:",chardata"`
 }
 
 func mapHostCreate(x hostCreateXML) *Host {

@@ -2,14 +2,16 @@ package create
 
 import "errors"
 
+type HostAddrType string
+
+const (
+	HostAddrTypeIPv4 HostAddrType = "v4"
+	HostAddrTypeIPv6 HostAddrType = "v6"
+)
+
 type Host struct {
 	Name  string
 	Addrs []hostAddrXML
-}
-
-type HostAddr struct {
-	IP    string
-	Value string
 }
 
 func (h *Host) Validate() error {
@@ -18,7 +20,7 @@ func (h *Host) Validate() error {
 	}
 
 	for _, a := range h.Addrs {
-		if a.IP != "" && a.IP != "v4" && a.IP != "v6" {
+		if a.IP != "" && a.IP != HostAddrTypeIPv4 && a.IP != HostAddrTypeIPv6 {
 			return errors.New("host:addr ip must be v4 or v6")
 		}
 		if a.Value == "" {
