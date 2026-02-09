@@ -115,6 +115,8 @@ func WithLogLevel(level LogLevel) ConfigOption {
 			cfg.LogLevel = LevelWarn
 		case Error:
 			cfg.LogLevel = LevelError
+		default:
+			cfg.LogLevel = LevelInfo
 		}
 	}
 }
