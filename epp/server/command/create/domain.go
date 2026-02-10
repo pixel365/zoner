@@ -4,6 +4,8 @@ import (
 	"encoding/xml"
 	"errors"
 
+	normalizer "github.com/pixel365/domain-normalizer"
+
 	"github.com/pixel365/zoner/epp/server/command/internal"
 )
 
@@ -91,6 +93,13 @@ func (d *Domain) Validate() error {
 	if d.Name == "" {
 		return errors.New("domain:name is required")
 	}
+
+	name, err := normalizer.Parse(d.Name)
+	if err != nil {
+		return errors.New("domain:name is invalid")
+	}
+
+	d.Name = name.Normalized
 
 	if d.AuthInfo.Password == "" {
 		return errors.New("domain:authInfo/domain:pw is required")

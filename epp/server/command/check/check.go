@@ -3,6 +3,8 @@ package check
 import (
 	"errors"
 
+	normalizer "github.com/pixel365/domain-normalizer"
+
 	"github.com/pixel365/zoner/epp/server/command/command"
 )
 
@@ -40,10 +42,17 @@ func (c *Check) validateDomains() error {
 		return errors.New("domain names is empty")
 	}
 
-	for _, n := range c.Domain.Names {
-		if n == "" {
+	for i := range c.Domain.Names {
+		if c.Domain.Names[i] == "" {
 			return errors.New("domain name is empty")
 		}
+
+		name, err := normalizer.Parse(c.Domain.Names[i])
+		if err != nil {
+			return errors.New("invalid domain name: " + c.Domain.Names[i] + "")
+		}
+
+		c.Domain.Names[i] = name.Normalized
 	}
 
 	return nil

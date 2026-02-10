@@ -1,6 +1,10 @@
 package internal
 
-import "errors"
+import (
+	"errors"
+
+	normalizer "github.com/pixel365/domain-normalizer"
+)
 
 type DomainRef struct {
 	Name string `xml:"name"`
@@ -15,10 +19,17 @@ type AuthInfo struct {
 	Password string `xml:"pw"`
 }
 
-func (d DomainRef) Validate() error {
+func (d *DomainRef) Validate() error {
 	if d.Name == "" {
 		return errors.New("domain:name is required")
 	}
+
+	name, err := normalizer.Parse(d.Name)
+	if err != nil {
+		return errors.New("domain:name is invalid")
+	}
+
+	d.Name = name.Normalized
 
 	return nil
 }
