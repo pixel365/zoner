@@ -17,6 +17,7 @@ const (
 	Transfer CommandName = "transfer"
 	Create   CommandName = "create"
 	Delete   CommandName = "delete"
+	Renew    CommandName = "renew"
 )
 
 type Commander interface {

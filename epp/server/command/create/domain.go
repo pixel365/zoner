@@ -9,13 +9,9 @@ import (
 	"github.com/pixel365/zoner/epp/server/command/internal"
 )
 
-type PeriodUnit string
 type DomainContactType string
 
 const (
-	PeriodUnitYear  PeriodUnit = "y"
-	PeriodUnitMonth PeriodUnit = "m"
-
 	DomainContactTypeAdmin   DomainContactType = "admin"
 	DomainContactTypeTech    DomainContactType = "tech"
 	DomainContactTypeBilling DomainContactType = "billing"
@@ -31,7 +27,7 @@ type Domain struct {
 }
 
 type Period struct {
-	Unit  PeriodUnit
+	Unit  internal.PeriodUnit
 	Value int
 }
 
@@ -61,8 +57,8 @@ type domainCreateXML struct {
 }
 
 type domainPeriodXML struct {
-	Unit  PeriodUnit `xml:"unit,attr,omitempty"`
-	Value int        `xml:",chardata"`
+	Unit  internal.PeriodUnit `xml:"unit,attr,omitempty"`
+	Value int                 `xml:",chardata"`
 }
 
 type domainNsXML struct {
@@ -109,8 +105,8 @@ func (d *Domain) Validate() error {
 		if d.Period.Value <= 0 {
 			return errors.New("domain:period must be > 0")
 		}
-		if d.Period.Unit != "" && d.Period.Unit != PeriodUnitYear &&
-			d.Period.Unit != PeriodUnitMonth {
+		if d.Period.Unit != "" && d.Period.Unit != internal.PeriodUnitYear &&
+			d.Period.Unit != internal.PeriodUnitMonth {
 			return errors.New("domain:period unit must be y or m")
 		}
 	}

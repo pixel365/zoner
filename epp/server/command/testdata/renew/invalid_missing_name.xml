@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
+    <command>
+        <renew>
+            <domain:renew xmlns:domain="urn:ietf:params:xml:ns:domain-1.0">
+                <domain:curExpDate>2026-12-31</domain:curExpDate>
+            </domain:renew>
+        </renew>
+        <clTRID>REN-INV-NO-NAME</clTRID>
+    </command>
+</epp>

@@ -35,7 +35,7 @@ func HandleToken[D any, C any, H any](
 		}
 
 		if *seen {
-			return false, errors.New("exactly one info command must be present")
+			return false, errors.New("exactly one <" + name + "> command must be present")
 		}
 
 		if err := DecodeObjectInfo(dch, d, &t, name); err != nil {
@@ -48,7 +48,7 @@ func HandleToken[D any, C any, H any](
 	case xml.EndElement:
 		if t.Name == start.Name {
 			if !*seen {
-				return false, errors.New("exactly one info command must be present")
+				return false, errors.New("exactly one <" + name + "> command must be present")
 			}
 
 			return true, nil
