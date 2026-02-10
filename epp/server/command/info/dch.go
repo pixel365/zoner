@@ -1,27 +1,25 @@
 package info
 
-import "github.com/pixel365/zoner/epp/server/command/internal"
-
-func (i *Info) SetDomain(d *internal.Domain) {
+func (i *Info) SetDomain(d *DomainInfo) {
 	i.Domain = d
 }
 
-func (i *Info) SetContact(c *internal.Contact) {
+func (i *Info) SetContact(c *ContactInfo) {
 	i.Contact = c
 }
 
-func (i *Info) SetHost(h *internal.Host) {
+func (i *Info) SetHost(h *HostInfo) {
 	i.Host = h
 }
 
-func (i *Info) GetDomain() *internal.Domain {
+func (i *Info) GetDomain() *DomainInfo {
 	return i.Domain
 }
 
-func (i *Info) GetContact() *internal.Contact {
+func (i *Info) GetContact() *ContactInfo {
 	return i.Contact
 }
 
-func (i *Info) GetHost() *internal.Host {
+func (i *Info) GetHost() *HostInfo {
 	return i.Host
 }

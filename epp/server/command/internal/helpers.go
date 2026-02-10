@@ -11,17 +11,17 @@ const (
 	NsHost    = "urn:ietf:params:xml:ns:host-1.0"
 )
 
-type DomainContactHost interface {
-	SetDomain(*Domain)
-	GetDomain() *Domain
-	SetContact(*Contact)
-	GetContact() *Contact
-	SetHost(*Host)
-	GetHost() *Host
+type DomainContactHost[D any, C any, H any] interface {
+	SetDomain(*D)
+	GetDomain() *D
+	SetContact(*C)
+	GetContact() *C
+	SetHost(*H)
+	GetHost() *H
 }
 
-func HandleToken(
-	dch DomainContactHost,
+func HandleToken[D any, C any, H any](
+	dch DomainContactHost[D, C, H],
 	d *xml.Decoder,
 	tok xml.Token,
 	start *xml.StartElement,
@@ -38,7 +38,13 @@ func HandleToken(
 			return false, errors.New("exactly one info command must be present")
 		}
 
-		return false, DecodeObjectInfo(dch, d, &t, seen, name)
+		if err := DecodeObjectInfo(dch, d, &t, name); err != nil {
+			return false, err
+		}
+
+		*seen = true
+
+		return false, nil
 	case xml.EndElement:
 		if t.Name == start.Name {
 			if !*seen {
@@ -52,36 +58,27 @@ func HandleToken(
 	return false, nil
 }
 
-func DecodeObjectInfo(
-	dch DomainContactHost,
+func DecodeObjectInfo[D any, C any, H any](
+	dch DomainContactHost[D, C, H],
 	d *xml.Decoder,
 	t *xml.StartElement,
-	seen *bool,
 	name string,
 ) error {
 	switch t.Name.Space {
 	case NsDomain:
-		dch.SetDomain(new(Domain))
-		return Decode[Domain](d, dch.GetDomain(), t, seen)
+		dch.SetDomain(new(D))
+		return Decode[D](d, dch.GetDomain(), t)
 	case NsContact:
-		dch.SetContact(new(Contact))
-		return Decode[Contact](d, dch.GetContact(), t, seen)
+		dch.SetContact(new(C))
+		return Decode[C](d, dch.GetContact(), t)
 	case NsHost:
-		dch.SetHost(new(Host))
-		return Decode[Host](d, dch.GetHost(), t, seen)
+		dch.SetHost(new(H))
+		return Decode[H](d, dch.GetHost(), t)
 	default:
 		return errors.New("unsupported <" + name + "> object namespace: " + t.Name.Space)
 	}
 }
 
-func Decode[T any](d *xml.Decoder, to *T, t *xml.StartElement, seen *bool) error {
-	var v T
-	if err := d.DecodeElement(&v, t); err != nil {
-		return err
-	}
-
-	*to = v
-	*seen = true
-
-	return nil
+func Decode[T any](d *xml.Decoder, to *T, t *xml.StartElement) error {
+	return d.DecodeElement(to, t)
 }

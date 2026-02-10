@@ -79,7 +79,10 @@ func (t *Transfer) decodeObjectTransfer(d *xml.Decoder, token *xml.StartElement)
 			return err
 		}
 
-		t.Domain = &Domain{Name: x.Name, AuthInfo: x.AuthInfo}
+		t.Domain = &DomainTransfer{
+			DomainRef: internal.DomainRef{Name: x.Name},
+			AuthInfo:  x.AuthInfo,
+		}
 
 		return nil
 
@@ -89,7 +92,10 @@ func (t *Transfer) decodeObjectTransfer(d *xml.Decoder, token *xml.StartElement)
 			return err
 		}
 
-		t.Contact = &Contact{ID: x.ID, AuthInfo: x.AuthInfo}
+		t.Contact = &ContactTransfer{
+			ContactRef: internal.ContactRef{ID: x.ID},
+			AuthInfo:   x.AuthInfo,
+		}
 
 		return nil
 

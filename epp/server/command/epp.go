@@ -7,6 +7,7 @@ import (
 	"github.com/pixel365/zoner/epp/server/command/check"
 	command2 "github.com/pixel365/zoner/epp/server/command/command"
 	"github.com/pixel365/zoner/epp/server/command/create"
+	"github.com/pixel365/zoner/epp/server/command/delete"
 	"github.com/pixel365/zoner/epp/server/command/hello"
 	"github.com/pixel365/zoner/epp/server/command/info"
 	"github.com/pixel365/zoner/epp/server/command/login"
@@ -40,6 +41,9 @@ type EPP struct {
 
 	// Create https://datatracker.ietf.org/doc/html/rfc5730#section-2.9.3.1
 	Create *create.Create `xml:"urn:ietf:params:xml:ns:epp-1.0 command>create"`
+
+	// Delete https://datatracker.ietf.org/doc/html/rfc5730#section-2.9.3.2
+	Delete *delete.Delete `xml:"urn:ietf:params:xml:ns:epp-1.0 command>delete"`
 
 	// XMLName https://datatracker.ietf.org/doc/html/rfc5730#section-2.2
 	XMLName xml.Name `xml:"urn:ietf:params:xml:ns:epp-1.0 epp"`
@@ -79,6 +83,10 @@ func (e *EPP) Validate() error { //TODO: change to error response
 	}
 
 	if e.Create != nil {
+		notNilCommands++
+	}
+
+	if e.Delete != nil {
 		notNilCommands++
 	}
 
@@ -122,6 +130,10 @@ func (e *EPP) validate() error {
 		return e.Create.Validate()
 	}
 
+	if e.Delete != nil {
+		return e.Delete.Validate()
+	}
+
 	return nil
 }
 
@@ -156,6 +168,10 @@ func (e *EPP) Command() (command2.Commander, error) {
 
 	if e.Create != nil {
 		return e.Create, nil
+	}
+
+	if e.Delete != nil {
+		return e.Delete, nil
 	}
 
 	return nil, errors.New("unknown command")

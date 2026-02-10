@@ -8,9 +8,9 @@ import (
 )
 
 type Transfer struct {
-	Domain  *Domain  `xml:"-"`
-	Contact *Contact `xml:"-"`
-	Op      string   `xml:"op,attr"`
+	Domain  *DomainTransfer  `xml:"urn:ietf:params:xml:ns:domain-1.0 transfer"`
+	Contact *ContactTransfer `xml:"urn:ietf:params:xml:ns:contact-1.0 transfer"`
+	Op      string           `xml:"op,attr"`
 }
 
 func (t *Transfer) Name() command.CommandName {
