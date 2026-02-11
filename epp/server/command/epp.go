@@ -62,47 +62,28 @@ type EPP struct {
 func (e *EPP) Validate() error { //TODO: change to error response
 	var notNilCommands uint8
 
-	if e.Hello != nil {
+	switch {
+	case e.Hello != nil:
 		notNilCommands++
-	}
-
-	if e.Login != nil {
+	case e.Login != nil:
 		notNilCommands++
-	}
-
-	if e.Logout != nil {
+	case e.Logout != nil:
 		notNilCommands++
-	}
-
-	if e.Check != nil {
+	case e.Check != nil:
 		notNilCommands++
-	}
-
-	if e.Info != nil {
+	case e.Info != nil:
 		notNilCommands++
-	}
-
-	if e.Poll != nil {
+	case e.Poll != nil:
 		notNilCommands++
-	}
-
-	if e.Transfer != nil {
+	case e.Transfer != nil:
 		notNilCommands++
-	}
-
-	if e.Create != nil {
+	case e.Create != nil:
 		notNilCommands++
-	}
-
-	if e.Delete != nil {
+	case e.Delete != nil:
 		notNilCommands++
-	}
-
-	if e.Renew != nil {
+	case e.Renew != nil:
 		notNilCommands++
-	}
-
-	if e.Update != nil {
+	case e.Update != nil:
 		notNilCommands++
 	}
 
@@ -114,97 +95,59 @@ func (e *EPP) Validate() error { //TODO: change to error response
 }
 
 func (e *EPP) validate() error {
-	if e.Hello != nil {
+	switch {
+	case e.Hello != nil:
 		return e.Hello.Validate()
-	}
-
-	if e.Login != nil {
+	case e.Login != nil:
 		return e.Login.Validate()
-	}
-
-	if e.Logout != nil {
+	case e.Logout != nil:
 		return e.Logout.Validate()
-	}
-
-	if e.Check != nil {
+	case e.Check != nil:
 		return e.Check.Validate()
-	}
-
-	if e.Info != nil {
+	case e.Info != nil:
 		return e.Info.Validate()
-	}
-
-	if e.Poll != nil {
+	case e.Poll != nil:
 		return e.Poll.Validate()
-	}
-
-	if e.Transfer != nil {
+	case e.Transfer != nil:
 		return e.Transfer.Validate()
-	}
-
-	if e.Create != nil {
+	case e.Create != nil:
 		return e.Create.Validate()
-	}
-
-	if e.Delete != nil {
+	case e.Delete != nil:
 		return e.Delete.Validate()
-	}
-
-	if e.Renew != nil {
+	case e.Renew != nil:
 		return e.Renew.Validate()
-	}
-
-	if e.Update != nil {
+	case e.Update != nil:
 		return e.Update.Validate()
+	default:
+		return nil
 	}
-
-	return nil
 }
 
 func (e *EPP) Command() (command2.Commander, error) {
-	if e.Hello != nil {
+	switch {
+	case e.Hello != nil:
 		return e.Hello, nil
-	}
-
-	if e.Login != nil {
+	case e.Login != nil:
 		return e.Login, nil
-	}
-
-	if e.Logout != nil {
+	case e.Logout != nil:
 		return e.Logout, nil
-	}
-
-	if e.Check != nil {
+	case e.Check != nil:
 		return e.Check, nil
-	}
-
-	if e.Info != nil {
+	case e.Info != nil:
 		return e.Info, nil
-	}
-
-	if e.Poll != nil {
+	case e.Poll != nil:
 		return e.Poll, nil
-	}
-
-	if e.Transfer != nil {
+	case e.Transfer != nil:
 		return e.Transfer, nil
-	}
-
-	if e.Create != nil {
+	case e.Create != nil:
 		return e.Create, nil
-	}
-
-	if e.Delete != nil {
+	case e.Delete != nil:
 		return e.Delete, nil
-	}
-
-	if e.Renew != nil {
+	case e.Renew != nil:
 		return e.Renew, nil
-	}
-
-	if e.Update != nil {
+	case e.Update != nil:
 		return e.Update, nil
+	default:
+		return nil, errors.New("unknown command")
 	}
-
-	return nil, errors.New("unknown command")
 }
