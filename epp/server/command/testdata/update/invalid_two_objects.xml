@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
+    <command>
+        <update>
+            <domain:update xmlns:domain="urn:ietf:params:xml:ns:domain-1.0">
+                <domain:name>example.com</domain:name>
+                <domain:add>
+                    <domain:status s="clientHold"/>
+                </domain:add>
+            </domain:update>
+            <domain:update xmlns:domain="urn:ietf:params:xml:ns:domain-1.0">
+                <domain:name>example.net</domain:name>
+                <domain:chg>
+                    <domain:registrant>sh8013</domain:registrant>
+                </domain:chg>
+            </domain:update>
+        </update>
+        <clTRID>UPD-INV-TWO</clTRID>
+    </command>
+</epp>

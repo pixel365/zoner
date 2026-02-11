@@ -16,7 +16,8 @@ type HostRef struct {
 	Name string `xml:"name"`
 }
 type AuthInfo struct {
-	Password string `xml:"pw"`
+	Null     *struct{} `xml:"null,omitempty"`
+	Password string    `xml:"pw"`
 }
 
 func (d *DomainRef) Validate() error {
@@ -51,6 +52,14 @@ func (h HostRef) Validate() error {
 }
 
 func (a AuthInfo) Validate() error {
+	if a.Password == "" && a.Null != nil {
+		return errors.New("authInfo/null is not allowed when pw is present")
+	}
+
+	if a.Password != "" && a.Null != nil {
+		return errors.New("authInfo/pw and authInfo/null are mutually exclusive")
+	}
+
 	if a.Password == "" {
 		return errors.New("authInfo/pw is required")
 	}

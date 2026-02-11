@@ -15,6 +15,7 @@ import (
 	"github.com/pixel365/zoner/epp/server/command/poll"
 	"github.com/pixel365/zoner/epp/server/command/renew"
 	"github.com/pixel365/zoner/epp/server/command/transfer"
+	"github.com/pixel365/zoner/epp/server/command/update"
 )
 
 type EPP struct {
@@ -48,6 +49,9 @@ type EPP struct {
 
 	// Renew https://datatracker.ietf.org/doc/html/rfc5730#section-2.9.3.3
 	Renew *renew.Renew `xml:"urn:ietf:params:xml:ns:epp-1.0 command>renew"`
+
+	// Update https://datatracker.ietf.org/doc/html/rfc5730#section-2.9.3.5
+	Update *update.Update `xml:"urn:ietf:params:xml:ns:epp-1.0 command>update"`
 
 	// XMLName https://datatracker.ietf.org/doc/html/rfc5730#section-2.2
 	XMLName xml.Name `xml:"urn:ietf:params:xml:ns:epp-1.0 epp"`
@@ -95,6 +99,10 @@ func (e *EPP) Validate() error { //TODO: change to error response
 	}
 
 	if e.Renew != nil {
+		notNilCommands++
+	}
+
+	if e.Update != nil {
 		notNilCommands++
 	}
 
@@ -146,6 +154,10 @@ func (e *EPP) validate() error {
 		return e.Renew.Validate()
 	}
 
+	if e.Update != nil {
+		return e.Update.Validate()
+	}
+
 	return nil
 }
 
@@ -188,6 +200,10 @@ func (e *EPP) Command() (command2.Commander, error) {
 
 	if e.Renew != nil {
 		return e.Renew, nil
+	}
+
+	if e.Update != nil {
+		return e.Update, nil
 	}
 
 	return nil, errors.New("unknown command")
