@@ -7,9 +7,11 @@ import (
 	"io"
 	"net"
 
-	command2 "github.com/pixel365/zoner/epp/server/command"
-	"github.com/pixel365/zoner/epp/server/command/command"
-	login2 "github.com/pixel365/zoner/epp/server/command/login"
+	"github.com/pixel365/goepp"
+	"github.com/pixel365/goepp/command"
+	"github.com/pixel365/goepp/command/greeting"
+	"github.com/pixel365/goepp/command/login"
+
 	conn2 "github.com/pixel365/zoner/epp/server/conn"
 	"github.com/pixel365/zoner/epp/server/response"
 )
@@ -60,13 +62,13 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 		}
 	}()
 
-	greeting := command2.NewGreeting(e.Config.Greeting)
-	if err := connection.Write(ctx, greeting); err != nil {
+	g := greeting.NewGreeting(e.Config.Greeting)
+	if err := connection.Write(ctx, g); err != nil {
 		e.Log.Error("write greeting error", err)
 		return
 	}
 
-	parser := command2.CmdParser{}
+	parser := goepp.CmdParser{}
 
 	for {
 		select {
@@ -100,7 +102,7 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 func parseFrame(
 	ctx context.Context,
 	connection *conn2.Connection,
-	parser *command2.CmdParser,
+	parser *goepp.CmdParser,
 	frame []byte,
 ) (command.Commander, error) {
 	cmd, err := parser.Parse(frame)
@@ -126,8 +128,8 @@ func sendResponse(
 	}
 
 	if cmd.Name() == command.Hello {
-		greeting := command2.NewGreeting(e.Config.Greeting)
-		if err := connection.Write(ctx, greeting); err != nil {
+		g := greeting.NewGreeting(e.Config.Greeting)
+		if err := connection.Write(ctx, g); err != nil {
 			return err
 		}
 		return nil
@@ -167,7 +169,7 @@ func handleLogin(
 		return nil
 	}
 
-	creds, ok := cmd.(login2.Login)
+	creds, ok := cmd.(login.Login)
 	if !ok {
 		errorResponse := response.AnyError(2002, response.CommandUseError)
 		if err := connection.Write(ctx, errorResponse); err != nil {

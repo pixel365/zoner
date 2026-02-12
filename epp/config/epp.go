@@ -3,15 +3,15 @@ package config
 import (
 	"errors"
 
-	"github.com/pixel365/zoner/epp/config/epp/greeting"
+	"github.com/pixel365/goepp/command/greeting"
 )
 
 type Epp struct {
-	ListenAddr   string            `yaml:"listenAddr"`
-	Greeting     greeting.Greeting `yaml:"greeting"`
-	IdleTimeout  int               `yaml:"idleTimeout"`
-	ReadTimeout  int               `yaml:"readTimeout"`
-	WriteTimeout int               `yaml:"writeTimeout"`
+	ListenAddr   string                 `yaml:"listenAddr"`
+	Greeting     greeting.GreetingInner `yaml:"greeting"`
+	IdleTimeout  int                    `yaml:"idleTimeout"`
+	ReadTimeout  int                    `yaml:"readTimeout"`
+	WriteTimeout int                    `yaml:"writeTimeout"`
 }
 
 func (e *Epp) Validate() error {

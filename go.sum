@@ -13,6 +13,8 @@ github.com/mattn/go-isatty v0.0.19 h1:JITubQf0MOLdlGRuRq+jtsDlekdYPia9ZFsB8h/APP
 github.com/mattn/go-isatty v0.0.19/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/pixel365/domain-normalizer v0.0.2 h1:Hs7t7QHjDWtnKIDim44MQ2DDA0LYqbgVdYhXL4qonbA=
 github.com/pixel365/domain-normalizer v0.0.2/go.mod h1:RoDgPueqiYtNURgODd3rsCKpqCyeJZaPa4O2uExjYeA=
+github.com/pixel365/goepp v0.0.1 h1:UVH0/kE/gKj8lNkb8ZCtjQHkl0z8wHy9JEBmbOHMtQU=
+github.com/pixel365/goepp v0.0.1/go.mod h1:Vd7mNoNx9spKiWNl8FSAoYrK4vpSdi+pJSzl2eInyVM=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
