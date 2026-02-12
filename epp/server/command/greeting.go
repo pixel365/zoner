@@ -8,9 +8,11 @@ import (
 )
 
 // Greeting https://datatracker.ietf.org/doc/html/rfc5730#section-2.4
-type Greeting struct{}
+type Greeting struct {
+	greeting greeting.Greeting
+}
 
-func (g Greeting) Bytes(greeting greeting.Greeting) []byte {
+func (g Greeting) Marshal() ([]byte, error) {
 	var b strings.Builder
 
 	now := time.Now().UTC().Format(time.RFC3339)
@@ -19,35 +21,35 @@ func (g Greeting) Bytes(greeting greeting.Greeting) []byte {
 	b.WriteString(`<epp xmlns="urn:ietf:params:xml:ns:epp-1.0">`)
 	b.WriteString(`<greeting>`)
 
-	b.WriteString(`<svID>` + greeting.ServerID + `</svID>`)
+	b.WriteString(`<svID>` + g.greeting.ServerID + `</svID>`)
 	b.WriteString(`<svDate>` + now + `</svDate>`)
 
 	b.WriteString(`<svcMenu>`)
 
-	for _, v := range greeting.Versions {
+	for _, v := range g.greeting.Versions {
 		b.WriteString(`<version>` + v + `</version>`)
 	}
 
-	for _, lang := range greeting.Languages {
+	for _, lang := range g.greeting.Languages {
 		b.WriteString(`<lang>` + lang.String() + `</lang>`)
 	}
 
-	for _, o := range greeting.ObjURI {
+	for _, o := range g.greeting.ObjURI {
 		b.WriteString(`<objURI>` + o.String() + `</objURI>`)
 	}
 
-	if len(greeting.Extensions) > 0 {
+	if len(g.greeting.Extensions) > 0 {
 		b.WriteString(`<svcExtension>`)
 
-		for _, ex := range greeting.Extensions {
+		for _, ex := range g.greeting.Extensions {
 			b.WriteString(`<extURI>` + ex.String() + `</extURI>`)
 		}
 
 		b.WriteString(`</svcExtension>`)
 	}
 
-	if greeting.Dcp != nil {
-		greeting.Dcp.WriteXML(&b)
+	if g.greeting.Dcp != nil {
+		g.greeting.Dcp.WriteXML(&b)
 	}
 
 	b.WriteString(`</svcMenu>`)
@@ -55,9 +57,9 @@ func (g Greeting) Bytes(greeting greeting.Greeting) []byte {
 	b.WriteString(`</greeting>`)
 	b.WriteString(`</epp>`)
 
-	return []byte(b.String())
+	return []byte(b.String()), nil
 }
 
-func NewGreeting() Greeting {
-	return Greeting{}
+func NewGreeting(greeting greeting.Greeting) Greeting {
+	return Greeting{greeting}
 }

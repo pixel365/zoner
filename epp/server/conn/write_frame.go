@@ -3,13 +3,29 @@ package conn
 import (
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"math"
 	"net"
 	"time"
+
+	"github.com/pixel365/zoner/epp/server/response"
 )
 
-func (c *Connection) WriteFrame(ctx context.Context, frame []byte) error {
+func (c *Connection) Write(ctx context.Context, m response.Marshaller) error {
+	payload, err := m.Marshal()
+	if err != nil {
+		return err
+	}
+
+	if len(payload) == 0 {
+		return errors.New("payload is empty")
+	}
+
+	return c.writeFrame(ctx, payload)
+}
+
+func (c *Connection) writeFrame(ctx context.Context, frame []byte) error {
 	if err := c.setWriteDeadline(ctx); err != nil {
 		return err
 	}

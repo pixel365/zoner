@@ -26,7 +26,3 @@ type Commander interface {
 	Validate() error
 	NeedAuth() bool
 }
-
-type Responser interface {
-	AsBytes() []byte
-}

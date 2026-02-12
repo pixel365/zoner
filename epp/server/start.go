@@ -11,6 +11,7 @@ import (
 	"github.com/pixel365/zoner/epp/server/command/command"
 	login2 "github.com/pixel365/zoner/epp/server/command/login"
 	conn2 "github.com/pixel365/zoner/epp/server/conn"
+	"github.com/pixel365/zoner/epp/server/response"
 )
 
 func (e *Epp) Start(ctx context.Context) error {
@@ -59,8 +60,8 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 		}
 	}()
 
-	var greeting command2.Greeting
-	if err := connection.WriteFrame(ctx, greeting.Bytes(e.Config.Greeting)); err != nil {
+	greeting := command2.NewGreeting(e.Config.Greeting)
+	if err := connection.Write(ctx, greeting); err != nil {
 		e.Log.Error("write greeting error", err)
 		return
 	}
@@ -104,10 +105,11 @@ func parseFrame(
 ) (command.Commander, error) {
 	cmd, err := parser.Parse(frame)
 	if err != nil {
-		errorResponse := Response{Code: 2001}
-		if err = connection.WriteFrame(ctx, errorResponse.AsBytes()); err != nil {
+		errorResponse := response.AnyError(2001, response.CommandSyntaxError)
+		if err = connection.Write(ctx, errorResponse); err != nil {
 			return nil, err
 		}
+		return nil, nil
 	}
 
 	return cmd, nil
@@ -119,9 +121,13 @@ func sendResponse(
 	cmd command.Commander,
 	e *Epp,
 ) error {
+	if cmd == nil {
+		return nil
+	}
+
 	if cmd.Name() == command.Hello {
-		var greeting command2.Greeting
-		if err := connection.WriteFrame(ctx, greeting.Bytes(e.Config.Greeting)); err != nil {
+		greeting := command2.NewGreeting(e.Config.Greeting)
+		if err := connection.Write(ctx, greeting); err != nil {
 			return err
 		}
 		return nil
@@ -132,15 +138,15 @@ func sendResponse(
 	}
 
 	if cmd.NeedAuth() && !connection.IsAuthenticated() {
-		errorResponse := Response{Code: 2200}
-		if err := connection.WriteFrame(ctx, errorResponse.AsBytes()); err != nil {
+		errorResponse := response.AnyError(2200, response.AuthorizationError)
+		if err := connection.Write(ctx, errorResponse); err != nil {
 			return err
 		}
 		return nil
 	}
 
-	errorResponse := Response{Code: 2101}
-	if err := connection.WriteFrame(ctx, errorResponse.AsBytes()); err != nil {
+	errorResponse := response.AnyError(2101, response.UnimplementedCommand)
+	if err := connection.Write(ctx, errorResponse); err != nil {
 		return err
 	}
 
@@ -154,8 +160,8 @@ func handleLogin(
 	e *Epp,
 ) error {
 	if connection.IsAuthenticated() {
-		errorResponse := Response{Code: 2302, Msg: "Already logged in"}
-		if err := connection.WriteFrame(ctx, errorResponse.AsBytes()); err != nil {
+		errorResponse := response.AnyError(2302, "Already logged in")
+		if err := connection.Write(ctx, errorResponse); err != nil {
 			return err
 		}
 		return nil
@@ -163,26 +169,24 @@ func handleLogin(
 
 	creds, ok := cmd.(login2.Login)
 	if !ok {
-		errorResponse := Response{Code: 2002}
-		if err := connection.WriteFrame(ctx, errorResponse.AsBytes()); err != nil {
+		errorResponse := response.AnyError(2002, response.CommandUseError)
+		if err := connection.Write(ctx, errorResponse); err != nil {
 			return err
 		}
 		return nil
 	}
 
 	if err := e.AuthRepository.Login(creds.ClientID, creds.Password); err != nil {
-		errorResponse := Response{Code: 2201}
-		if err = connection.WriteFrame(ctx, errorResponse.AsBytes()); err != nil {
+		errorResponse := response.AnyError(2201, response.AuthorizationError)
+		if err = connection.Write(ctx, errorResponse); err != nil {
 			return err
 		}
-	} else {
-		connection.SetAuthenticated(true)
 
-		successResponse := Response{Code: 1000}
-		if err = connection.WriteFrame(ctx, successResponse.AsBytes()); err != nil {
-			return err
-		}
+		return nil
 	}
 
-	return nil
+	connection.SetAuthenticated(true)
+	res := response.NewResponse[struct{}, struct{}](1000, response.CommandCompletedSuccessfully)
+
+	return connection.Write(ctx, res)
 }
