@@ -26,3 +26,6 @@ selfcrt:
       -out server.crt \
       -config self-signed.dev.cnf
 
+integration:
+	go test -v ./tests
+
