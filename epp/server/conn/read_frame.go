@@ -16,7 +16,7 @@ func (c *Connection) ReadFrame(ctx context.Context) ([]byte, error) {
 
 	var h [4]byte
 	if _, err := io.ReadFull(c.conn, h[:]); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("read frame header: %w", err)
 	}
 
 	total := binary.BigEndian.Uint32(h[:])
@@ -36,7 +36,7 @@ func (c *Connection) ReadFrame(ctx context.Context) ([]byte, error) {
 	}
 
 	if _, err := io.ReadFull(c.conn, payload); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("read frame payload: %w", err)
 	}
 
 	return payload, nil

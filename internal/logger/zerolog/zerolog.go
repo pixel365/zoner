@@ -78,6 +78,30 @@ func (o *Log) Func(name string) logger.Logger {
 	return &Log{logger: l}
 }
 
+func (o *Log) ClientId(id string) logger.Logger {
+	if id == "" {
+		return o
+	}
+
+	l := o.logger.With().
+		Str("user.id", id).
+		Logger()
+
+	return &Log{logger: l}
+}
+
+func (o *Log) SessionId(id string) logger.Logger {
+	if id == "" {
+		return o
+	}
+
+	l := o.logger.With().
+		Str("session.id", id).
+		Logger()
+
+	return &Log{logger: l}
+}
+
 func NewLogger(cfg *logger.Config, writers ...io.Writer) *Log {
 	zerolog.TimeFieldFormat = time.RFC3339Nano
 	zerolog.TimestampFieldName = "@timestamp"

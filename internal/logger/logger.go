@@ -8,4 +8,6 @@ type Logger interface {
 	Logf(string, ...any)
 	Component(string) Logger
 	Func(string) Logger
+	ClientId(string) Logger
+	SessionId(string) Logger
 }
