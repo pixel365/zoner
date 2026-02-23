@@ -45,7 +45,7 @@ func main() {
 		return
 	}
 
-	srv := server.NewEpp(cfg, log)
+	srv := server.MustEpp(cfg, log)
 	if err := srv.Start(ctx); err != nil {
 		mainLog.Error("epp server starting error", err)
 	}

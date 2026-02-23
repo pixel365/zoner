@@ -2,6 +2,7 @@ package server
 
 import (
 	"crypto/tls"
+	"fmt"
 
 	"github.com/pixel365/zoner/epp/config"
 	"github.com/pixel365/zoner/internal/logger"
@@ -16,10 +17,10 @@ type Epp struct {
 	Config         config.Epp
 }
 
-func NewEpp(cfg *config.Config, log logger.Logger) *Epp {
+func MustEpp(cfg *config.Config, log logger.Logger) *Epp {
 	cert, err := tls.LoadX509KeyPair(cfg.TLS.CertPath, cfg.TLS.KeyPath)
 	if err != nil {
-		return nil
+		panic(fmt.Errorf("load cert and key: %w", err))
 	}
 
 	return &Epp{
