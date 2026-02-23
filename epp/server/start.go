@@ -14,6 +14,8 @@ import (
 	"github.com/pixel365/goepp/command/greeting"
 	"github.com/pixel365/goepp/command/login"
 
+	"github.com/pixel365/zoner/internal/metrics"
+
 	conn2 "github.com/pixel365/zoner/epp/server/conn"
 	"github.com/pixel365/zoner/epp/server/response"
 )
@@ -42,6 +44,8 @@ func (e *Epp) Start(ctx context.Context) error {
 			}
 		}
 
+		e.Metrics.Inc(ctx, metrics.ConnectionsTotal)
+
 		tlsConn, ok := conn.(*tls.Conn)
 		if ok {
 			if err := tlsConn.HandshakeContext(ctx); err != nil {
@@ -57,6 +61,8 @@ func (e *Epp) Start(ctx context.Context) error {
 }
 
 func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
+	e.Metrics.Inc(ctx, metrics.ActiveConnections)
+
 	connection := conn2.NewConnection(conn, &e.Config)
 	log := e.Log.SessionId(connection.SessionId())
 
@@ -69,6 +75,10 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 		}
 
 		duration := time.Since(connection.SessionStart())
+
+		e.Metrics.Dec(ctx, metrics.ActiveConnections)
+		e.Metrics.Duration(ctx, metrics.SessionDurationMs, duration)
+
 		log.ClientId(connection.ClientId()).
 			Info("connection closed. session duration: %s", duration.String())
 	}()
@@ -100,16 +110,24 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 				return
 			}
 
-			cmd, err := parseFrame(ctx, connection, &parser, frame)
+			e.Metrics.Inc(ctx, metrics.FramesReadTotal)
+
+			cmd, err := parseFrame(ctx, connection, &parser, frame, e)
 			if err != nil {
+				e.Metrics.Inc(ctx, metrics.ParseErrorsTotal)
 				log.ClientId(clientId).Error("parse command error", err)
 				return
 			}
 
+			e.Metrics.Inc(ctx, metrics.CommandsTotal)
+
 			if err = sendResponse(ctx, connection, cmd, e); err != nil {
+				e.Metrics.Inc(ctx, metrics.CommandsWithErrorsTotal)
 				log.ClientId(clientId).Error("write frame error", err)
 				return
 			}
+
+			e.Metrics.Inc(ctx, metrics.FramesWriteTotal)
 		}
 	}
 }
@@ -119,9 +137,11 @@ func parseFrame(
 	connection *conn2.Connection,
 	parser *goepp.CmdParser,
 	frame []byte,
+	e *Epp,
 ) (command.Commander, error) {
 	cmd, err := parser.Parse(frame)
 	if err != nil {
+		e.Metrics.Inc(ctx, metrics.ParseErrorsTotal)
 		errorResponse := response.AnyError(2001, response.CommandSyntaxError)
 		if err = connection.Write(ctx, errorResponse); err != nil {
 			return nil, fmt.Errorf("write error response for invalid command: %w", err)
@@ -190,6 +210,10 @@ func handleLogin(
 
 	creds, ok := cmd.(login.Login)
 	if !ok {
+		e.Metrics.Inc(ctx, metrics.AuthFailureTotal)
+		e.Log.SessionId(connection.SessionId()).
+			Error("cast failed", errors.New("invalid credentials type"))
+
 		errorResponse := response.AnyError(2002, response.CommandUseError)
 		if err := connection.Write(ctx, errorResponse); err != nil {
 			return fmt.Errorf("write error response for invalid login command: %w", err)
@@ -198,6 +222,9 @@ func handleLogin(
 	}
 
 	if err := e.AuthRepository.Login(creds.ClientID, creds.Password); err != nil {
+		e.Metrics.Inc(ctx, metrics.AuthFailureTotal)
+		e.Log.SessionId(connection.SessionId()).ClientId(creds.ClientID).Error("login failed", err)
+
 		errorResponse := response.AnyError(2201, response.AuthorizationError)
 		if err = connection.Write(ctx, errorResponse); err != nil {
 			return fmt.Errorf("write error response for invalid login credentials: %w", err)
@@ -214,6 +241,7 @@ func handleLogin(
 	connection.SetAuthenticated(true)
 	connection.SetClientId(creds.ClientID)
 
+	e.Metrics.Inc(ctx, metrics.AuthSuccessTotal)
 	e.Log.SessionId(connection.SessionId()).ClientId(creds.ClientID).Info("login successful")
 
 	return nil

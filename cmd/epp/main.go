@@ -9,6 +9,8 @@ import (
 
 	"github.com/joho/godotenv"
 
+	"github.com/pixel365/zoner/internal/metrics/noop"
+
 	"github.com/pixel365/zoner/epp/config"
 	"github.com/pixel365/zoner/epp/server"
 	"github.com/pixel365/zoner/internal/logger"
@@ -45,7 +47,9 @@ func main() {
 		return
 	}
 
-	srv := server.MustEpp(cfg, log)
+	metrics := &noop.Noop{}
+
+	srv := server.MustEpp(cfg, log, metrics)
 	if err := srv.Start(ctx); err != nil {
 		mainLog.Error("epp server starting error", err)
 	}
