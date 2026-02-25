@@ -7,6 +7,7 @@ import (
 )
 
 var _ tracing.Tracer = (*Noop)(nil)
+var _ tracing.Ender = (*Noop)(nil)
 
 type Noop struct{}
 
