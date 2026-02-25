@@ -6,7 +6,7 @@ import (
 
 	"github.com/pixel365/zoner/epp/config"
 	"github.com/pixel365/zoner/internal/logger"
-	"github.com/pixel365/zoner/internal/metrics"
+	"github.com/pixel365/zoner/internal/observability/metrics"
 	"github.com/pixel365/zoner/internal/repository"
 	"github.com/pixel365/zoner/internal/repository/auth"
 )

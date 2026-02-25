@@ -9,7 +9,7 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/pixel365/zoner/internal/metrics/noop"
+	"github.com/pixel365/zoner/internal/observability/metrics/noop"
 
 	"github.com/pixel365/zoner/epp/config"
 	"github.com/pixel365/zoner/epp/server"
