@@ -43,18 +43,33 @@ func (c *Connection) ReadFrame(ctx context.Context) ([]byte, error) {
 }
 
 func (c *Connection) setReadDeadline(ctx context.Context) error {
-	if ddl, ok := ctx.Deadline(); ok {
-		_ = c.conn.SetReadDeadline(ddl)
-		return nil
+	now := time.Now()
+	var ddl time.Time
+
+	if d, ok := ctx.Deadline(); ok {
+		ddl = d
+	}
+
+	if c.idleTimeout > 0 {
+		idleDdl := now.Add(c.idleTimeout)
+		if ddl.IsZero() || idleDdl.Before(ddl) {
+			ddl = idleDdl
+		}
 	}
 
 	if c.readTimeout > 0 {
-		_ = c.conn.SetReadDeadline(time.Now().Add(c.readTimeout))
-		return nil
+		readDdl := now.Add(c.readTimeout)
+		if ddl.IsZero() || readDdl.Before(ddl) {
+			ddl = readDdl
+		}
 	}
 
-	if ctx.Done() != nil {
-		_ = c.conn.SetReadDeadline(time.Now().Add(1 * time.Second))
+	if ddl.IsZero() && ctx.Done() != nil {
+		ddl = now.Add(1 * time.Second)
+	}
+
+	if !ddl.IsZero() {
+		_ = c.conn.SetReadDeadline(ddl)
 	}
 
 	return nil
