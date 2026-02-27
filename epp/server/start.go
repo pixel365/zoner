@@ -44,7 +44,7 @@ func (e *Epp) Start(ctx context.Context) error {
 			}
 		}
 
-		e.Metrics.Inc(ctx, metrics.ConnectionsTotal)
+		e.Metrics.Inc(ctx, metrics.RequestsTotal)
 
 		tlsConn, ok := conn.(*tls.Conn)
 		if ok {
@@ -61,6 +61,7 @@ func (e *Epp) Start(ctx context.Context) error {
 }
 
 func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
+	e.Metrics.Inc(ctx, metrics.ConnectionsTotal)
 	e.Metrics.Inc(ctx, metrics.ActiveConnections)
 
 	connection := conn2.NewConnection(conn, &e.Config)
@@ -84,7 +85,7 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 	}()
 
 	g := greeting.NewGreeting(e.Config.Greeting)
-	if err := connection.Write(ctx, g); err != nil {
+	if err := connection.Write(ctx, g, e.Metrics.IncBytes); err != nil {
 		log.Error("write greeting error", err)
 		return
 	}
@@ -100,7 +101,7 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 			return
 		default:
 			clientId := connection.ClientId()
-			frame, err := connection.ReadFrame(ctx)
+			frame, err := connection.ReadFrame(ctx, e.Metrics.IncBytes)
 			if err != nil {
 				if errors.Is(err, io.EOF) {
 					return
@@ -110,11 +111,8 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 				return
 			}
 
-			e.Metrics.Inc(ctx, metrics.FramesReadTotal)
-
 			cmd, err := parseFrame(ctx, connection, &parser, frame, e)
 			if err != nil {
-				e.Metrics.Inc(ctx, metrics.ParseErrorsTotal)
 				log.ClientId(clientId).Error("parse command error", err)
 				return
 			}
@@ -126,8 +124,6 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 				log.ClientId(clientId).Error("write frame error", err)
 				return
 			}
-
-			e.Metrics.Inc(ctx, metrics.FramesWriteTotal)
 		}
 	}
 }
@@ -143,7 +139,7 @@ func parseFrame(
 	if err != nil {
 		e.Metrics.Inc(ctx, metrics.ParseErrorsTotal)
 		errorResponse := response.AnyError(2001, response.CommandSyntaxError)
-		if err = connection.Write(ctx, errorResponse); err != nil {
+		if err = connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
 			return nil, fmt.Errorf("write error response for invalid command: %w", err)
 		}
 		return nil, nil
@@ -164,7 +160,7 @@ func sendResponse(
 
 	if cmd.Name() == command.Hello {
 		g := greeting.NewGreeting(e.Config.Greeting)
-		if err := connection.Write(ctx, g); err != nil {
+		if err := connection.Write(ctx, g, e.Metrics.IncBytes); err != nil {
 			return fmt.Errorf("write greeting error: %w", err)
 		}
 		return nil
@@ -180,14 +176,14 @@ func sendResponse(
 
 	if cmd.NeedAuth() && !connection.IsAuthenticated() {
 		errorResponse := response.AnyError(2200, response.AuthorizationError)
-		if err := connection.Write(ctx, errorResponse); err != nil {
+		if err := connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
 			return fmt.Errorf("write error response when client is not authenticated: %w", err)
 		}
 		return nil
 	}
 
 	errorResponse := response.AnyError(2101, response.UnimplementedCommand)
-	if err := connection.Write(ctx, errorResponse); err != nil {
+	if err := connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
 		return fmt.Errorf("write error response for unimplemented command: %w", err)
 	}
 
@@ -202,7 +198,7 @@ func handleLogin(
 ) error {
 	if connection.IsAuthenticated() {
 		errorResponse := response.AnyError(2302, "Already logged in")
-		if err := connection.Write(ctx, errorResponse); err != nil {
+		if err := connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
 			return fmt.Errorf("write error response when client is authenticated: %w", err)
 		}
 		return nil
@@ -215,7 +211,7 @@ func handleLogin(
 			Error("cast failed", errors.New("invalid credentials type"))
 
 		errorResponse := response.AnyError(2002, response.CommandUseError)
-		if err := connection.Write(ctx, errorResponse); err != nil {
+		if err := connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
 			return fmt.Errorf("write error response for invalid login command: %w", err)
 		}
 		return nil
@@ -226,7 +222,7 @@ func handleLogin(
 		e.Log.SessionId(connection.SessionId()).ClientId(creds.ClientID).Error("login failed", err)
 
 		errorResponse := response.AnyError(2201, response.AuthorizationError)
-		if err = connection.Write(ctx, errorResponse); err != nil {
+		if err = connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
 			return fmt.Errorf("write error response for invalid login credentials: %w", err)
 		}
 
@@ -234,7 +230,7 @@ func handleLogin(
 	}
 
 	res := response.NewResponse[struct{}, struct{}](1000, response.CommandCompletedSuccessfully)
-	if err := connection.Write(ctx, res); err != nil {
+	if err := connection.Write(ctx, res, e.Metrics.IncBytes); err != nil {
 		return fmt.Errorf("write login response error: %w", err)
 	}
 
@@ -253,7 +249,7 @@ func handleLogout(ctx context.Context, connection *conn2.Connection, e *Epp) err
 			1500,
 			response.CommandCompleteSuccessfullyEndingSession,
 		)
-		if err := connection.Write(ctx, res); err != nil {
+		if err := connection.Write(ctx, res, e.Metrics.IncBytes); err != nil {
 			return fmt.Errorf("write logout response error: %w", err)
 		}
 
@@ -269,7 +265,7 @@ func handleLogout(ctx context.Context, connection *conn2.Connection, e *Epp) err
 	}
 
 	errorResponse := response.AnyError(2002, response.CommandUseError)
-	if err := connection.Write(ctx, errorResponse); err != nil {
+	if err := connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
 		return fmt.Errorf("write error response for invalid logout command: %w", err)
 	}
 

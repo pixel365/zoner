@@ -9,7 +9,7 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/pixel365/zoner/internal/observability/metrics/noop"
+	"github.com/pixel365/zoner/internal/observability/metrics/collector"
 
 	"github.com/pixel365/zoner/epp/config"
 	"github.com/pixel365/zoner/epp/server"
@@ -47,7 +47,12 @@ func main() {
 		return
 	}
 
-	metrics := &noop.Noop{}
+	metrics := collector.NewCollector(ctx, log)
+	defer func() {
+		if err := metrics.Shutdown(context.Background()); err != nil {
+			mainLog.Error("metrics shutdown error", err)
+		}
+	}()
 
 	srv := server.MustEpp(cfg, log, metrics)
 	if err := srv.Start(ctx); err != nil {

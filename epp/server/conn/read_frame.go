@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"io"
 	"time"
+
+	"github.com/pixel365/zoner/internal/observability/metrics"
 )
 
-func (c *Connection) ReadFrame(ctx context.Context) ([]byte, error) {
+func (c *Connection) ReadFrame(ctx context.Context, fn metrics.IncBytesFunc) ([]byte, error) {
 	if err := c.setReadDeadline(ctx); err != nil {
 		return nil, err
 	}
@@ -38,6 +40,8 @@ func (c *Connection) ReadFrame(ctx context.Context) ([]byte, error) {
 	if _, err := io.ReadFull(c.conn, payload); err != nil {
 		return nil, fmt.Errorf("read frame payload: %w", err)
 	}
+
+	fn(ctx, metrics.FramesReadTotal, int64(payloadLength))
 
 	return payload, nil
 }

@@ -10,9 +10,14 @@ import (
 	"time"
 
 	"github.com/pixel365/zoner/epp/server/response"
+	"github.com/pixel365/zoner/internal/observability/metrics"
 )
 
-func (c *Connection) Write(ctx context.Context, m response.Marshaller) error {
+func (c *Connection) Write(
+	ctx context.Context,
+	m response.Marshaller,
+	fn metrics.IncBytesFunc,
+) error {
 	payload, err := m.Marshal()
 	if err != nil {
 		return err
@@ -22,7 +27,13 @@ func (c *Connection) Write(ctx context.Context, m response.Marshaller) error {
 		return errors.New("payload is empty")
 	}
 
-	return c.writeFrame(ctx, payload)
+	if err = c.writeFrame(ctx, payload); err != nil {
+		return err
+	}
+
+	fn(ctx, metrics.FramesWriteTotal, int64(len(payload)))
+
+	return nil
 }
 
 func (c *Connection) writeFrame(ctx context.Context, frame []byte) error {
