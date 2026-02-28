@@ -1,3 +1,4 @@
+-- +goose Up
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     username TEXT NOT NULL,
@@ -33,3 +34,10 @@ CREATE TRIGGER IF NOT EXISTS users_updated_at_trigger
 BEFORE UPDATE ON users
 FOR EACH ROW
 EXECUTE FUNCTION users_set_updated_at();
+
+-- +goose Down
+DROP TRIGGER IF EXISTS users_updated_at_trigger;
+DROP FUNCTION IF EXISTS users_set_updated_at();
+DROP INDEX IF EXISTS users_email_uidx;
+DROP INDEX IF EXISTS users_username_uidx;
+DROP TABLE IF EXISTS users;
