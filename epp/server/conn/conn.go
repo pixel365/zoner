@@ -14,7 +14,7 @@ const minFrameLength = 4
 type Connection struct {
 	sessionStart  time.Time
 	conn          net.Conn
-	clientId      string
+	userId        string
 	sessionId     string
 	readTimeout   time.Duration
 	writeTimeout  time.Duration
@@ -28,11 +28,11 @@ func (c *Connection) SetAuthenticated(authenticated bool) {
 }
 
 func (c *Connection) SetClientId(clientId string) {
-	c.clientId = clientId
+	c.userId = clientId
 }
 
-func (c *Connection) ClientId() string {
-	return c.clientId
+func (c *Connection) UserId() string {
+	return c.userId
 }
 
 func (c *Connection) SessionStart() time.Time {

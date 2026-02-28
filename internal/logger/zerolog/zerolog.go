@@ -78,7 +78,7 @@ func (o *Log) Func(name string) logger.Logger {
 	return &Log{logger: l}
 }
 
-func (o *Log) ClientId(id string) logger.Logger {
+func (o *Log) WithUserId(id string) logger.Logger {
 	if id == "" {
 		return o
 	}
@@ -90,13 +90,37 @@ func (o *Log) ClientId(id string) logger.Logger {
 	return &Log{logger: l}
 }
 
-func (o *Log) SessionId(id string) logger.Logger {
+func (o *Log) WithSessionId(id string) logger.Logger {
 	if id == "" {
 		return o
 	}
 
 	l := o.logger.With().
 		Str("session.id", id).
+		Logger()
+
+	return &Log{logger: l}
+}
+
+func (o *Log) WithAddress(addr string) logger.Logger {
+	if addr == "" {
+		return o
+	}
+
+	l := o.logger.With().
+		Str("client.address", addr).
+		Logger()
+
+	return &Log{logger: l}
+}
+
+func (o *Log) WithEventDuration(duration time.Duration) logger.Logger {
+	if duration <= 0 {
+		return o
+	}
+
+	l := o.logger.With().
+		Int64("event.duration_ms", duration.Milliseconds()).
 		Logger()
 
 	return &Log{logger: l}

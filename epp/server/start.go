@@ -20,6 +20,8 @@ import (
 	"github.com/pixel365/zoner/epp/server/response"
 )
 
+var errSessionTerminate = errors.New("session terminate")
+
 func (e *Epp) Start(ctx context.Context, readyFn func(bool)) error {
 	if readyFn == nil {
 		return fmt.Errorf("ready func is nil")
@@ -68,32 +70,47 @@ func (e *Epp) Start(ctx context.Context, readyFn func(bool)) error {
 	}
 }
 
+// TODO: rm gocognit
+//
+//nolint:gocognit
 func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 	e.Metrics.Inc(ctx, metrics.ConnectionsTotal)
 	e.Metrics.Inc(ctx, metrics.ActiveConnections)
 
 	connection := conn2.NewConnection(conn, &e.Config)
-	log := e.Log.SessionId(connection.SessionId())
+	log := e.Log.WithSessionId(connection.SessionId()).WithAddress(conn.RemoteAddr().String())
 
-	log.Info("new connection")
+	log.Info("session.open")
+
+	var closeError error
 
 	defer func() {
-		if err := connection.Close(); err != nil {
-			log.ClientId(connection.ClientId()).Error("close connection error", err)
-			return
-		}
-
 		duration := time.Since(connection.SessionStart())
 
 		e.Metrics.Dec(ctx, metrics.ActiveConnections)
 		e.Metrics.Duration(ctx, metrics.SessionDurationMs, duration)
 
-		log.ClientId(connection.ClientId()).
-			Info("connection closed. session duration: %s", duration.String())
+		if err := connection.Close(); err != nil {
+			log.WithUserId(connection.UserId()).
+				WithEventDuration(duration).
+				Error("close connection error", err)
+			return
+		}
+
+		e := &closeError
+		if e != nil && *e != nil {
+			log.WithUserId(connection.UserId()).
+				WithEventDuration(duration).
+				Error("session.close", *e)
+			return
+		}
+
+		log.WithUserId(connection.UserId()).WithEventDuration(duration).Info("session.close")
 	}()
 
 	g := greeting.NewGreeting(e.Config.Greeting)
 	if err := connection.Write(ctx, g, e.Metrics.IncBytes); err != nil {
+		closeError = err
 		log.Error("write greeting error", err)
 		return
 	}
@@ -103,33 +120,34 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 	for {
 		select {
 		case <-ctx.Done():
-			duration := time.Since(connection.SessionStart())
-			log.ClientId(connection.ClientId()).
-				Info("context done. session duration: %s", duration.String())
+			closeError = fmt.Errorf("context done")
 			return
 		default:
-			clientId := connection.ClientId()
 			frame, err := connection.ReadFrame(ctx, e.Metrics.IncBytes)
 			if err != nil {
 				if errors.Is(err, io.EOF) {
 					return
 				}
-
-				log.ClientId(clientId).Error("read frame error", err)
+				closeError = fmt.Errorf("read frame error: %w", err)
 				return
 			}
 
 			cmd, err := parseFrame(ctx, connection, &parser, frame, e)
 			if err != nil {
-				log.ClientId(clientId).Error("parse command error", err)
+				closeError = fmt.Errorf("parse frame error: %w", err)
 				return
 			}
 
 			e.Metrics.Inc(ctx, metrics.CommandsTotal)
 
-			if err = sendResponse(ctx, connection, cmd, e); err != nil {
+			err = sendResponse(ctx, connection, cmd, e)
+			if errors.Is(err, errSessionTerminate) {
+				return
+			}
+
+			if err != nil {
+				closeError = fmt.Errorf("send response error: %w", err)
 				e.Metrics.Inc(ctx, metrics.CommandsWithErrorsTotal)
-				log.ClientId(clientId).Error("write frame error", err)
 				return
 			}
 		}
@@ -215,7 +233,7 @@ func handleLogin(
 	creds, ok := cmd.(login.Login)
 	if !ok {
 		e.Metrics.Inc(ctx, metrics.AuthFailureTotal)
-		e.Log.SessionId(connection.SessionId()).
+		e.Log.WithSessionId(connection.SessionId()).
 			Error("cast failed", errors.New("invalid credentials type"))
 
 		errorResponse := response.AnyError(2002, response.CommandUseError)
@@ -227,7 +245,9 @@ func handleLogin(
 
 	if err := e.AuthRepository.Login(creds.ClientID, creds.Password); err != nil {
 		e.Metrics.Inc(ctx, metrics.AuthFailureTotal)
-		e.Log.SessionId(connection.SessionId()).ClientId(creds.ClientID).Error("login failed", err)
+		e.Log.WithSessionId(connection.SessionId()).
+			WithUserId(creds.ClientID).
+			Error("login failed", err)
 
 		errorResponse := response.AnyError(2201, response.AuthorizationError)
 		if err = connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
@@ -246,7 +266,7 @@ func handleLogin(
 	connection.SetClientId(creds.ClientID)
 
 	e.Metrics.Inc(ctx, metrics.AuthSuccessTotal)
-	e.Log.SessionId(connection.SessionId()).ClientId(creds.ClientID).Info("login successful")
+	e.Log.WithSessionId(connection.SessionId()).WithUserId(creds.ClientID).Info("login successful")
 
 	return nil
 }
@@ -261,15 +281,7 @@ func handleLogout(ctx context.Context, connection *conn2.Connection, e *Epp) err
 			return fmt.Errorf("write logout response error: %w", err)
 		}
 
-		if err := connection.Close(); err != nil {
-			return fmt.Errorf("close connection error: %w", err)
-		}
-
-		e.Log.SessionId(connection.SessionId()).
-			ClientId(connection.ClientId()).
-			Info("logout successful")
-
-		return nil
+		return errSessionTerminate
 	}
 
 	errorResponse := response.AnyError(2002, response.CommandUseError)

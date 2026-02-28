@@ -1,5 +1,7 @@
 package logger
 
+import "time"
+
 type Logger interface {
 	Debug(string, ...any)
 	Info(string, ...any)
@@ -8,6 +10,8 @@ type Logger interface {
 	Logf(string, ...any)
 	Component(string) Logger
 	Func(string) Logger
-	ClientId(string) Logger
-	SessionId(string) Logger
+	WithUserId(string) Logger
+	WithSessionId(string) Logger
+	WithAddress(string) Logger
+	WithEventDuration(time.Duration) Logger
 }
