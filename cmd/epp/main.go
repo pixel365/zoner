@@ -2,13 +2,17 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/joho/godotenv"
 
+	"github.com/pixel365/zoner/internal/health"
 	"github.com/pixel365/zoner/internal/observability/metrics/collector"
 
 	"github.com/pixel365/zoner/epp/config"
@@ -54,8 +58,28 @@ func main() {
 		}
 	}()
 
+	healthState := health.NewState()
+	healthServer := health.NewHealthServer(healthState)
+	go func() {
+		if err := healthServer.ListenAndServe(); err != nil &&
+			!errors.Is(err, http.ErrServerClosed) {
+			mainLog.Error("health server start error", err)
+		}
+	}()
+
+	defer func() {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := healthServer.Shutdown(shutdownCtx); err != nil &&
+			!errors.Is(err, http.ErrServerClosed) {
+			mainLog.Error("health server shutdown error", err)
+		}
+	}()
+
 	srv := server.MustEpp(cfg, log, metrics)
-	if err := srv.Start(ctx); err != nil {
+	if err := srv.Start(ctx, healthState.SetReady); err != nil {
 		mainLog.Error("epp server starting error", err)
+		stop()
 	}
 }

@@ -5,7 +5,7 @@ import (
 )
 
 type Server interface {
-	Start(context.Context) error
+	Start(context.Context, func(bool)) error
 }
 
 type Conn interface {

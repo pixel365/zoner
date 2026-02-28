@@ -20,18 +20,26 @@ import (
 	"github.com/pixel365/zoner/epp/server/response"
 )
 
-func (e *Epp) Start(ctx context.Context) error {
+func (e *Epp) Start(ctx context.Context, readyFn func(bool)) error {
+	if readyFn == nil {
+		return fmt.Errorf("ready func is nil")
+	}
+
 	ln, err := tls.Listen("tcp", e.Config.ListenAddr, e.TLSConfig)
 	if err != nil {
+		readyFn(false)
 		return err
 	}
 
 	go func() {
 		<-ctx.Done()
+		readyFn(false)
 		if err := ln.Close(); err != nil {
 			e.Log.Error("close listener error", err)
 		}
 	}()
+
+	readyFn(true)
 
 	for {
 		conn, err := ln.Accept()
