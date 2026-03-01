@@ -29,3 +29,9 @@ selfcrt:
 integration:
 	go test -v ./tests
 
+up:
+	@docker-compose -p zoner -f docker-compose.dev.yaml up -d
+
+down:
+	@docker-compose -p zoner -f docker-compose.dev.yaml down
+
