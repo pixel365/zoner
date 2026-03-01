@@ -37,4 +37,5 @@ down:
 
 build:
 	@go build -ldflags "-s -w" -o ./build/migrate ./cmd/migrate
+	@go build -ldflags "-s -w" -o ./build/superuser ./cmd/superuser
 

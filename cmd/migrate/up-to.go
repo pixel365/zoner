@@ -41,6 +41,7 @@ func newUpToCommand(ctx context.Context, dsn, dir *string) *cobra.Command {
 	}
 
 	cmd.Flags().Int64P("version", "v", 0, "version to migrate to")
+	_ = cmd.MarkFlagRequired("version")
 
 	return cmd
 }

@@ -2,21 +2,18 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 
 	"github.com/pixel365/zoner/internal/db/postgres"
 )
 
-var (
-	dsn           string
-	migrationsDir string
-)
+var pool *pgxpool.Pool
 
 func init() {
 	_ = godotenv.Load()
@@ -24,30 +21,27 @@ func init() {
 
 func rootCommand(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "migrate",
-		Short: "Migrate database",
+		Use:   "superuser",
+		Short: "Superuser commands",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			migrationsDir = os.Getenv("POSTGRES_MIGRATIONS_DIR")
-			if migrationsDir == "" {
-				return fmt.Errorf("POSTGRES_MIGRATIONS_DIR not set")
-			}
-
 			pgConfig := postgres.NewConfigFromEnv()
-			if err := pgConfig.Validate(); err != nil {
+			pgPool, err := postgres.NewPool(ctx, pgConfig)
+			if err != nil {
 				return err
 			}
 
-			dsn = pgConfig.DSN()
+			pool = pgPool
 
 			return nil
 		},
+		PersistentPostRun: func(cmd *cobra.Command, args []string) {
+			if pool != nil {
+				pool.Close()
+			}
+		},
 	}
 
-	cmd.AddCommand(
-		newUpCommand(ctx, &dsn, &migrationsDir),
-		newUpToCommand(ctx, &dsn, &migrationsDir),
-		newDownCommand(ctx, &dsn, &migrationsDir),
-	)
+	cmd.AddCommand(newAddCommand(ctx))
 
 	return cmd
 }
