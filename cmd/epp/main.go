@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	"go.opentelemetry.io/contrib/instrumentation/host"
+	"go.opentelemetry.io/contrib/instrumentation/runtime"
 
 	"github.com/pixel365/zoner/internal/health"
 	"github.com/pixel365/zoner/internal/observability/metrics/collector"
@@ -57,6 +59,9 @@ func main() {
 			mainLog.Error("metrics shutdown error", err)
 		}
 	}()
+
+	_ = runtime.Start(runtime.WithMinimumReadMemStatsInterval(10 * time.Second))
+	_ = host.Start()
 
 	healthState := health.NewState()
 	healthServer := health.NewHealthServer(healthState)

@@ -1,4 +1,4 @@
-.PHONY: all tidy fa fmt lint selfcrt test
+.PHONY: all tidy fa fmt lint selfcrt test up down build
 
 all: tidy fa fmt lint
 
@@ -34,4 +34,7 @@ up:
 
 down:
 	@docker-compose -p zoner -f docker-compose.dev.yaml down
+
+build:
+	@go build -ldflags "-s -w" -o ./build/migrate ./cmd/migrate
 

@@ -20,6 +20,30 @@ type Config struct {
 	SSLMode  string
 }
 
+func (c Config) Validate() error {
+	if c.User == "" {
+		return fmt.Errorf("user is empty")
+	}
+
+	if c.Password == "" {
+		return fmt.Errorf("password is empty")
+	}
+
+	if c.Host == "" {
+		return fmt.Errorf("host is empty")
+	}
+
+	if c.Port == "" {
+		return fmt.Errorf("port is empty")
+	}
+
+	if c.Database == "" {
+		return fmt.Errorf("database is empty")
+	}
+
+	return nil
+}
+
 func (c Config) DSN() string {
 	user := url.UserPassword(c.User, c.Password)
 	return fmt.Sprintf(

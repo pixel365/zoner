@@ -28,7 +28,9 @@ func NewCollector(ctx context.Context, log logger.Logger) metrics.Collector {
 
 	meter, err := otel.NewMeter(ctx)
 	if err != nil {
-		log.Error("otel initialization error", err)
+		if log != nil {
+			log.Error("otel initialization error", err)
+		}
 		return &noop.Noop{}
 	}
 
