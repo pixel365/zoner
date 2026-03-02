@@ -1,6 +1,6 @@
 module github.com/pixel365/zoner
 
-go 1.25.7
+go 1.25.0
 
 require (
 	github.com/exaring/otelpgx v0.10.0
