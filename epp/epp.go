@@ -6,6 +6,7 @@ import (
 
 type Server interface {
 	Start(context.Context, func(bool)) error
+	Shutdown(context.Context)
 }
 
 type Conn interface {

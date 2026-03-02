@@ -1,6 +1,8 @@
 package repository
 
+import "context"
+
 type Authenticator interface {
-	Login(string, string) error
+	Login(context.Context, string, string) error
 	Logout() error
 }

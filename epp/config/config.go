@@ -7,13 +7,15 @@ import (
 	"strings"
 
 	"github.com/goccy/go-yaml"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/pixel365/zoner/internal/logger"
 )
 
 type Config struct {
-	LogLevel logger.LogLevel `yaml:"logLevel"`
+	DB       *pgxpool.Pool
 	TLS      TLS             `yaml:"tls"`
+	LogLevel logger.LogLevel `yaml:"logLevel"`
 	Epp      Epp             `yaml:"epp"`
 }
 

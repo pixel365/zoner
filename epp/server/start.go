@@ -14,6 +14,8 @@ import (
 	"github.com/pixel365/goepp/command/greeting"
 	"github.com/pixel365/goepp/command/login"
 
+	errors2 "github.com/pixel365/zoner/internal/errors"
+
 	"github.com/pixel365/zoner/internal/observability/metrics"
 
 	conn2 "github.com/pixel365/zoner/epp/server/conn"
@@ -243,13 +245,23 @@ func handleLogin(
 		return nil
 	}
 
-	if err := e.AuthRepository.Login(creds.ClientID, creds.Password); err != nil {
-		e.Metrics.Inc(ctx, metrics.AuthFailureTotal)
+	if err := e.AuthRepository.Login(ctx, creds.ClientID, creds.Password); err != nil {
+		var (
+			errCode = 2200
+			errType = response.AuthenticationError
+		)
+		if errors.Is(err, errors2.ErrInvalidCredentials) {
+			e.Metrics.Inc(ctx, metrics.AuthFailureTotal)
+		} else {
+			errCode = 2400
+			errType = response.CommandFailed
+		}
+
 		e.Log.WithSessionId(connection.SessionId()).
 			WithUserId(creds.ClientID).
 			Error("login failed", err)
 
-		errorResponse := response.AnyError(2201, response.AuthorizationError)
+		errorResponse := response.AnyError(errCode, errType)
 		if err = connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
 			return fmt.Errorf("write error response for invalid login credentials: %w", err)
 		}

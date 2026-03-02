@@ -14,6 +14,8 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/host"
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
 
+	"github.com/pixel365/zoner/internal/db/postgres"
+
 	"github.com/pixel365/zoner/internal/health"
 	"github.com/pixel365/zoner/internal/observability/metrics/collector"
 
@@ -53,6 +55,16 @@ func main() {
 		return
 	}
 
+	pgConfig := postgres.NewConfigFromEnv()
+	pgConfig.Log = log.Component("postgres.db")
+	pgPool, err := postgres.NewPool(ctx, pgConfig)
+	if err != nil {
+		mainLog.Error("postgres pool error", err)
+		return
+	}
+
+	cfg.DB = pgPool
+
 	metrics := collector.NewCollector(ctx, log)
 	defer func() {
 		if err := metrics.Shutdown(context.Background()); err != nil {
@@ -83,6 +95,8 @@ func main() {
 	}()
 
 	srv := server.MustEpp(cfg, log, metrics)
+	defer srv.Shutdown(context.Background())
+
 	if err := srv.Start(ctx, healthState.SetReady); err != nil {
 		mainLog.Error("epp server starting error", err)
 		stop()
