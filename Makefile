@@ -1,4 +1,6 @@
-.PHONY: all tidy fa fmt lint selfcrt test up down build
+.PHONY: all tidy fa fmt lint selfcrt test up down build epp migrate superuser
+
+SERVICES = epp migrate superuser
 
 all: tidy fa fmt lint
 
@@ -35,7 +37,8 @@ up:
 down:
 	@docker-compose -p zoner -f docker-compose.dev.yaml down
 
-build:
-	@go build -ldflags "-s -w" -o ./build/migrate ./cmd/migrate
-	@go build -ldflags "-s -w" -o ./build/superuser ./cmd/superuser
+$(SERVICES):
+	@go build -ldflags "-s -w" -o ./build/$@ ./cmd/$@
+
+build: $(SERVICES)
 
