@@ -14,6 +14,8 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/host"
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
 
+	"github.com/pixel365/zoner/internal/db/redis"
+
 	"github.com/pixel365/zoner/internal/db/postgres"
 
 	"github.com/pixel365/zoner/internal/health"
@@ -63,7 +65,10 @@ func main() {
 		return
 	}
 
+	redisClient := redis.NewRedisClient(ctx, redis.NewConfigFromEnv())
+
 	cfg.DB = pgPool
+	cfg.RedisClient = redisClient
 
 	metrics := collector.NewCollector(ctx, log)
 	defer func() {

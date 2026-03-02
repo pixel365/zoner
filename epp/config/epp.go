@@ -7,11 +7,12 @@ import (
 )
 
 type Epp struct {
-	ListenAddr   string                 `yaml:"listenAddr"`
-	Greeting     greeting.GreetingInner `yaml:"greeting"`
-	IdleTimeout  int                    `yaml:"idleTimeout"`
-	ReadTimeout  int                    `yaml:"readTimeout"`
-	WriteTimeout int                    `yaml:"writeTimeout"`
+	ListenAddr       string                 `yaml:"listenAddr"`
+	Greeting         greeting.GreetingInner `yaml:"greeting"`
+	IdleTimeout      int                    `yaml:"idleTimeout"`
+	ReadTimeout      int                    `yaml:"readTimeout"`
+	WriteTimeout     int                    `yaml:"writeTimeout"`
+	ActiveSessionTtl int                    `yaml:"activeSessionTtl"`
 }
 
 func (e *Epp) Validate() error {
@@ -29,6 +30,10 @@ func (e *Epp) Validate() error {
 
 	if e.WriteTimeout <= 0 {
 		return errors.New("write timeout must be positive")
+	}
+
+	if e.ActiveSessionTtl <= 0 {
+		e.ActiveSessionTtl = 3600
 	}
 
 	if err := e.Greeting.Validate(); err != nil {

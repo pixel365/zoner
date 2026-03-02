@@ -92,6 +92,14 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 		e.Metrics.Dec(ctx, metrics.ActiveConnections)
 		e.Metrics.Duration(ctx, metrics.SessionDurationMs, duration)
 
+		if connection.IsAuthenticated() {
+			if err := e.Limiter.Release(ctx, connection.SessionKey()); err != nil {
+				e.Log.WithSessionId(connection.SessionId()).
+					WithUserId(connection.UserId()).
+					Error("session release failed", err)
+			}
+		}
+
 		if err := connection.Close(); err != nil {
 			log.WithUserId(connection.UserId()).
 				WithEventDuration(duration).
@@ -245,7 +253,8 @@ func handleLogin(
 		return nil
 	}
 
-	if err := e.AuthRepository.Login(ctx, creds.ClientID, creds.Password); err != nil {
+	maxActiveSessions, err := e.AuthRepository.Login(ctx, creds.ClientID, creds.Password)
+	if err != nil {
 		var (
 			errCode = 2200
 			errType = response.AuthenticationError
@@ -269,13 +278,44 @@ func handleLogin(
 		return nil
 	}
 
+	connection.SetClientId(creds.ClientID)
+
+	reserved, err := e.Limiter.Reserve(
+		ctx,
+		connection.SessionKey(),
+		maxActiveSessions,
+		time.Duration(e.Config.ActiveSessionTtl)*time.Second,
+	)
+	if err != nil {
+		e.Log.WithSessionId(connection.SessionId()).
+			WithUserId(creds.ClientID).
+			Error("session reserve failed", err)
+		errorResponse := response.AnyError(2400, response.CommandFailed)
+		if err = connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
+			return fmt.Errorf("write error response for session reserve error: %w", err)
+		}
+		return nil
+	}
+
+	if !reserved {
+		e.Log.WithSessionId(connection.SessionId()).
+			WithUserId(creds.ClientID).
+			Info("session limit exceeded")
+		errorResponse := response.AnyError(
+			2502,
+			response.SessionLimitExceededServerClosingConnection,
+		)
+		if err = connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
+			return fmt.Errorf("write error response for session limit exceeded: %w", err)
+		}
+		return errSessionTerminate
+	}
+
+	connection.SetAuthenticated(true)
 	res := response.NewResponse[struct{}, struct{}](1000, response.CommandCompletedSuccessfully)
 	if err := connection.Write(ctx, res, e.Metrics.IncBytes); err != nil {
 		return fmt.Errorf("write login response error: %w", err)
 	}
-
-	connection.SetAuthenticated(true)
-	connection.SetClientId(creds.ClientID)
 
 	e.Metrics.Inc(ctx, metrics.AuthSuccessTotal)
 	e.Log.WithSessionId(connection.SessionId()).WithUserId(creds.ClientID).Info("login successful")
@@ -292,6 +332,14 @@ func handleLogout(ctx context.Context, connection *conn2.Connection, e *Epp) err
 		if err := connection.Write(ctx, res, e.Metrics.IncBytes); err != nil {
 			return fmt.Errorf("write logout response error: %w", err)
 		}
+
+		if err := e.Limiter.Release(ctx, connection.SessionKey()); err != nil {
+			e.Log.WithSessionId(connection.SessionId()).
+				WithUserId(connection.UserId()).
+				Error("session release failed", err)
+		}
+
+		connection.SetAuthenticated(false)
 
 		return errSessionTerminate
 	}

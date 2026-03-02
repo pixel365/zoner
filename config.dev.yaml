@@ -10,6 +10,7 @@ epp:
   idleTimeout: 1800
   readTimeout: 30
   writeTimeout: 10
+  activeSessionTtl: 3600
 
   greeting:
     sv_id: "zoner"
@@ -17,7 +18,7 @@ epp:
       - "1.0"
     languages:
       - "en"
-    extensions: []
+    extensions: [ ]
     dcp:
       access: "all"
       statements:

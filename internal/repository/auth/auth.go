@@ -20,39 +20,41 @@ type Auth struct {
 	db repository.QueryRower
 }
 
-func (a *Auth) Login(ctx context.Context, username, psw string) error {
+func (a *Auth) Login(ctx context.Context, username, psw string) (int64, error) {
+	var maxActiveSessions int64
+
 	username = strings.ToLower(username)
 	username = strings.TrimSpace(username)
 	if username == "" {
-		return e.ErrInvalidCredentials
+		return maxActiveSessions, e.ErrInvalidCredentials
 	}
 
 	psw = strings.TrimSpace(psw)
 	if psw == "" {
-		return e.ErrInvalidCredentials
+		return maxActiveSessions, e.ErrInvalidCredentials
 	}
 
 	var passwordHash string
-	err := a.db.QueryRow(ctx, "SELECT password_hash FROM users WHERE username = $1", username).
-		Scan(&passwordHash)
+	err := a.db.QueryRow(ctx, "SELECT password_hash, max_active_sessions FROM users WHERE username = $1", username).
+		Scan(&passwordHash, &maxActiveSessions)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return e.ErrInvalidCredentials
+		return maxActiveSessions, e.ErrInvalidCredentials
 	}
 
 	if err != nil {
-		return fmt.Errorf("%w: %w", e.ErrInternalError, err)
+		return 0, fmt.Errorf("%w: %w", e.ErrInternalError, err)
 	}
 
 	ok, err := password.Verify(psw, passwordHash)
 	if err != nil {
-		return fmt.Errorf("%w: %w", e.ErrInternalError, err)
+		return maxActiveSessions, fmt.Errorf("%w: %w", e.ErrInternalError, err)
 	}
 
 	if !ok {
-		return e.ErrInvalidCredentials
+		return maxActiveSessions, e.ErrInvalidCredentials
 	}
 
-	return nil
+	return maxActiveSessions, nil
 }
 
 func (a *Auth) Logout() error {

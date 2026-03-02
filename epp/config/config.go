@@ -9,14 +9,16 @@ import (
 	"github.com/goccy/go-yaml"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/pixel365/zoner/internal/db/redis"
 	"github.com/pixel365/zoner/internal/logger"
 )
 
 type Config struct {
-	DB       *pgxpool.Pool
-	TLS      TLS             `yaml:"tls"`
-	LogLevel logger.LogLevel `yaml:"logLevel"`
-	Epp      Epp             `yaml:"epp"`
+	DB          *pgxpool.Pool
+	RedisClient *redis.Client
+	TLS         TLS             `yaml:"tls"`
+	LogLevel    logger.LogLevel `yaml:"logLevel"`
+	Epp         Epp             `yaml:"epp"`
 }
 
 func (c Config) Validate() error {

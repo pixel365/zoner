@@ -34,9 +34,14 @@ Use [.env.example](./.env.example) as a template for local setup.
 | `POSTGRES_PORT`               | Yes           | -                    | postgres config, dev compose | PostgreSQL port for app DSN and local `docker-compose.dev.yaml` port mapping.             |
 | `POSTGRES_SSL_MODE`           | Yes           | -                    | postgres config              | `sslmode` value in PostgreSQL DSN (`disable`, `require`, etc.).                           |
 | `POSTGRES_DATA_PATH`          | No            | `./data/postgres`    | dev compose                  | Local host path used by `docker-compose.dev.yaml` volume for postgres data.               |
+| `REDIS_HOST`                  | Yes           | -                    | redis config                 | Redis host.                                                                               |
+| `REDIS_PORT`                  | Yes           | -                    | redis config                 | Redis port.                                                                               |
+| `REDIS_PASSWORD`              | Yes           | -                    | redis config                 | Redis password.                                                                           |
+| `REDIS_USERNAME`              | No            | empty                | redis config                 | Redis ACL username (optional, if ACL user is configured).                                 |
 
 ### Build/Test
 
-| Variable       | Type             | Required                | Used by                                 | Description                                                 |
-|----------------|------------------|-------------------------|-----------------------------------------|-------------------------------------------------------------|
-| `SERVICE_NAME` | Docker build arg | Yes (tests image build) | `testing.dockerfile`, integration tests | Chooses which `./cmd/<name>` binary to build in test image. |
+| Variable                  | Type             | Required                | Used by                                 | Description                                                 |
+|---------------------------|------------------|-------------------------|-----------------------------------------|-------------------------------------------------------------|
+| `SERVICE_NAME`            | Docker build arg | Yes (tests image build) | `testing.dockerfile`, integration tests | Chooses which `./cmd/<name>` binary to build in test image. |
+| `POSTGRES_MIGRATIONS_DIR` | Runtime env      | Yes (`cmd/migrate`)     | `cmd/migrate`                           | Filesystem path to SQL migrations directory.                |

@@ -2,6 +2,7 @@ package conn
 
 import (
 	"net"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -28,7 +29,13 @@ func (c *Connection) SetAuthenticated(authenticated bool) {
 }
 
 func (c *Connection) SetClientId(clientId string) {
-	c.userId = clientId
+	userId := strings.ToLower(clientId)
+	userId = strings.TrimSpace(userId)
+	c.userId = strings.ToLower(userId)
+}
+
+func (c *Connection) SessionKey() string {
+	return "active:session:" + c.userId
 }
 
 func (c *Connection) UserId() string {

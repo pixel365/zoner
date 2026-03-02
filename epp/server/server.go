@@ -15,6 +15,7 @@ import (
 
 type Epp struct {
 	DbPool         *pgxpool.Pool
+	Limiter        repository.SessionLimiter
 	Log            logger.Logger
 	AuthRepository repository.Authenticator
 	Metrics        metrics.Collector
@@ -36,10 +37,15 @@ func MustEpp(cfg *config.Config, log logger.Logger, collector metrics.Collector)
 		panic("db config is required")
 	}
 
+	if cfg.RedisClient == nil {
+		panic("redis client is required")
+	}
+
 	return &Epp{
-		DbPool: cfg.DB,
-		Log:    log,
-		Config: cfg.Epp,
+		DbPool:  cfg.DB,
+		Limiter: cfg.RedisClient,
+		Log:     log,
+		Config:  cfg.Epp,
 		TLSConfig: &tls.Config{
 			MinVersion:   tls.VersionTLS12,
 			MaxVersion:   tls.VersionTLS13,
