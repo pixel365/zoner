@@ -232,7 +232,7 @@ func handleLogin(
 		return nil
 	}
 
-	creds, ok := cmd.(login.Login)
+	creds, ok := cmd.(*login.Login)
 	if !ok {
 		e.Metrics.Inc(ctx, metrics.AuthFailureTotal)
 		e.Log.WithSessionId(connection.SessionId()).
