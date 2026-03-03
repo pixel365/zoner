@@ -46,7 +46,7 @@ END;
 $$ LANGUAGE plpgsql;
 -- +goose StatementEnd
 
-CREATE TRIGGER contacts_set_updated_at
+CREATE TRIGGER contacts_set_updated_at_trigger
     BEFORE UPDATE
     ON contacts
     FOR EACH ROW
@@ -84,6 +84,6 @@ DROP INDEX IF EXISTS contacts_contact_id_idx;
 DROP INDEX IF EXISTS contacts_registrar_id_idx;
 DROP INDEX IF EXISTS contacts_email_idx;
 DROP INDEX IF EXISTS contacts_deleted_at_idx;
-DROP TRIGGER IF EXISTS contacts_set_updated_at ON contacts;
+DROP TRIGGER IF EXISTS contacts_set_updated_at_trigger ON contacts;
 DROP FUNCTION IF EXISTS contacts_set_updated_at();
 DROP TABLE IF EXISTS contacts;

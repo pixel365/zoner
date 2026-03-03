@@ -53,13 +53,13 @@ END;
 $$ LANGUAGE 'plpgsql';
 -- +goose StatementEnd
 
-CREATE TRIGGER domains_set_registered_at
+CREATE TRIGGER domains_set_registered_at_trigger
     BEFORE INSERT
     ON domains
     FOR EACH ROW
 EXECUTE PROCEDURE domains_set_registered_at();
 
-CREATE TRIGGER domain_set_updated_at
+CREATE TRIGGER domain_set_updated_at_trigger
     BEFORE UPDATE
     ON domains
     FOR EACH ROW
@@ -85,8 +85,8 @@ COMMENT ON COLUMN domains.is_locked IS 'Quick lock flag to block selected mutati
 COMMENT ON COLUMN domains.is_auto_renew IS 'Whether domain should be auto-renewed at expiry.';
 
 -- +goose Down
-DROP TRIGGER IF EXISTS domain_set_updated_at ON domains;
-DROP TRIGGER IF EXISTS domains_set_registered_at ON domains;
+DROP TRIGGER IF EXISTS domain_set_updated_at_trigger ON domains;
+DROP TRIGGER IF EXISTS domains_set_registered_at_trigger ON domains;
 DROP FUNCTION IF EXISTS domain_set_updated_at();
 DROP FUNCTION IF EXISTS domains_set_registered_at();
 DROP INDEX IF EXISTS domains_expires_at_idx;
