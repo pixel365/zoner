@@ -35,7 +35,7 @@ func (a *Auth) Login(ctx context.Context, username, psw string) (int64, error) {
 	}
 
 	var passwordHash string
-	err := a.db.QueryRow(ctx, "SELECT password_hash, max_active_sessions FROM users WHERE username = $1", username).
+	err := a.db.QueryRow(ctx, "SELECT password_hash, max_active_sessions FROM registrars WHERE username = $1", username).
 		Scan(&passwordHash, &maxActiveSessions)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return maxActiveSessions, e.ErrInvalidCredentials

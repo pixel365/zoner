@@ -1,5 +1,5 @@
 -- +goose Up
-CREATE TABLE IF NOT EXISTS users
+CREATE TABLE IF NOT EXISTS registrars
 (
     id                  BIGSERIAL PRIMARY KEY,
     username            TEXT                                  NOT NULL,
@@ -20,11 +20,11 @@ CREATE TABLE IF NOT EXISTS users
         )
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS users_username_uidx ON users (lower(username));
-CREATE UNIQUE INDEX IF NOT EXISTS users_email_uidx ON users (lower(email));
+CREATE UNIQUE INDEX IF NOT EXISTS registrars_username_uidx ON registrars (lower(username));
+CREATE UNIQUE INDEX IF NOT EXISTS registrars_email_uidx ON registrars (lower(email));
 
 -- +goose StatementBegin
-CREATE OR REPLACE FUNCTION users_set_updated_at()
+CREATE OR REPLACE FUNCTION registrars_set_updated_at()
     RETURNS TRIGGER AS
 $$
 BEGIN
@@ -34,15 +34,15 @@ END;
 $$ language 'plpgsql';
 -- +goose StatementEnd
 
-CREATE TRIGGER users_updated_at_trigger
+CREATE TRIGGER registrars_updated_at_trigger
     BEFORE UPDATE
-    ON users
+    ON registrars
     FOR EACH ROW
-EXECUTE PROCEDURE users_set_updated_at();
+EXECUTE PROCEDURE registrars_set_updated_at();
 
 -- +goose Down
-DROP TRIGGER IF EXISTS users_updated_at_trigger ON users;
-DROP FUNCTION IF EXISTS users_set_updated_at();
-DROP INDEX IF EXISTS users_email_uidx;
-DROP INDEX IF EXISTS users_username_uidx;
-DROP TABLE IF EXISTS users;
+DROP TRIGGER IF EXISTS registrars_updated_at_trigger ON registrars;
+DROP FUNCTION IF EXISTS registrars_set_updated_at();
+DROP INDEX IF EXISTS registrars_email_uidx;
+DROP INDEX IF EXISTS registrars_username_uidx;
+DROP TABLE IF EXISTS registrars;
