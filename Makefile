@@ -1,6 +1,6 @@
-.PHONY: all tidy fa fmt lint selfcrt test up down build epp migrate superuser
+.PHONY: all tidy fa fmt lint selfcrt test up down build epp migrate superuser registrar
 
-SERVICES = epp migrate superuser
+SERVICES = epp migrate superuser registrar
 
 all: tidy fa fmt lint
 
