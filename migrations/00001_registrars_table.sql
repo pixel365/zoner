@@ -40,6 +40,17 @@ CREATE TRIGGER registrars_updated_at_trigger
     FOR EACH ROW
 EXECUTE PROCEDURE registrars_set_updated_at();
 
+COMMENT ON TABLE registrars IS 'EPP registrars (clients) allowed to authenticate and manage registry objects.';
+COMMENT ON COLUMN registrars.id IS 'Internal surrogate key.';
+COMMENT ON COLUMN registrars.username IS 'Registrar login name used as EPP client identifier.';
+COMMENT ON COLUMN registrars.password_hash IS 'Password hash for registrar authentication.';
+COMMENT ON COLUMN registrars.email IS 'Registrar operational email.';
+COMMENT ON COLUMN registrars.is_active IS 'Indicates whether registrar account can authenticate.';
+COMMENT ON COLUMN registrars.is_superuser IS 'Administrative flag for elevated platform access.';
+COMMENT ON COLUMN registrars.max_active_sessions IS 'Maximum simultaneously active EPP sessions for registrar.';
+COMMENT ON COLUMN registrars.created_at IS 'Row creation timestamp.';
+COMMENT ON COLUMN registrars.updated_at IS 'Row last update timestamp.';
+
 -- +goose Down
 DROP TRIGGER IF EXISTS registrars_updated_at_trigger ON registrars;
 DROP FUNCTION IF EXISTS registrars_set_updated_at();

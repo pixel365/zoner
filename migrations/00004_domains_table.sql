@@ -65,6 +65,25 @@ CREATE TRIGGER domain_set_updated_at
     FOR EACH ROW
 EXECUTE PROCEDURE domain_set_updated_at();
 
+COMMENT ON TABLE domains IS 'Domain objects managed by registrars in the registry.';
+COMMENT ON COLUMN domains.id IS 'Internal surrogate key.';
+COMMENT ON COLUMN domains.name IS 'Human-readable domain name as received from client.';
+COMMENT ON COLUMN domains.punycode IS 'Canonical ASCII domain form used for uniqueness checks.';
+COMMENT ON COLUMN domains.roid IS 'Repository object identifier for the domain object.';
+COMMENT ON COLUMN domains.registrar_id IS 'Current sponsoring registrar.';
+COMMENT ON COLUMN domains.registrant_contact_id IS 'Reference to registrant contact.';
+COMMENT ON COLUMN domains.auth_info_hash IS 'Hashed authInfo secret used for transfer authorization.';
+COMMENT ON COLUMN domains.period_value IS 'Registration period value.';
+COMMENT ON COLUMN domains.period_unit IS 'Registration period unit; currently restricted to years.';
+COMMENT ON COLUMN domains.created_at IS 'Row creation timestamp.';
+COMMENT ON COLUMN domains.updated_at IS 'Row last update timestamp.';
+COMMENT ON COLUMN domains.registered_at IS 'Initial registration timestamp.';
+COMMENT ON COLUMN domains.expires_at IS 'Domain expiration timestamp.';
+COMMENT ON COLUMN domains.transferred_at IS 'Timestamp of the last successful transfer.';
+COMMENT ON COLUMN domains.deleted_at IS 'Soft-delete timestamp; NULL means active.';
+COMMENT ON COLUMN domains.is_locked IS 'Quick lock flag to block selected mutating operations.';
+COMMENT ON COLUMN domains.is_auto_renew IS 'Whether domain should be auto-renewed at expiry.';
+
 -- +goose Down
 DROP TRIGGER IF EXISTS domain_set_updated_at ON domains;
 DROP TRIGGER IF EXISTS domains_set_registered_at ON domains;
