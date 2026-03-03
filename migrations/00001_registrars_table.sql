@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS registrars
     password_hash       TEXT                                  NOT NULL,
     email               TEXT                                  NOT NULL,
     is_active           BOOLEAN     DEFAULT TRUE              NOT NULL,
-    is_superuser        BOOLEAN     DEFAULT FALSE             NOT NULL,
     max_active_sessions INT         DEFAULT 1                 NOT NULL,
     created_at          TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at          TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -46,7 +45,6 @@ COMMENT ON COLUMN registrars.username IS 'Registrar login name used as EPP clien
 COMMENT ON COLUMN registrars.password_hash IS 'Password hash for registrar authentication.';
 COMMENT ON COLUMN registrars.email IS 'Registrar operational email.';
 COMMENT ON COLUMN registrars.is_active IS 'Indicates whether registrar account can authenticate.';
-COMMENT ON COLUMN registrars.is_superuser IS 'Administrative flag for elevated platform access.';
 COMMENT ON COLUMN registrars.max_active_sessions IS 'Maximum simultaneously active EPP sessions for registrar.';
 COMMENT ON COLUMN registrars.created_at IS 'Row creation timestamp.';
 COMMENT ON COLUMN registrars.updated_at IS 'Row last update timestamp.';

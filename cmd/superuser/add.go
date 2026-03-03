@@ -21,11 +21,12 @@ func newAddCommand(ctx context.Context) *cobra.Command {
 			}
 
 			query := `
-INSERT INTO users (username, password_hash, email, is_superuser, max_active_sessions) 
-VALUES ($1, $2, $3, true, 10)
+INSERT INTO staffs (name, last_name, email, password_hash, roles, is_active) 
+VALUES ($1, $2, $3, $4, $5::staff_role[], true)
 `
 
-			username, _ := cmd.Flags().GetString("username")
+			name, _ := cmd.Flags().GetString("name")
+			lastName, _ := cmd.Flags().GetString("lastname")
 			email, _ := cmd.Flags().GetString("email")
 
 			psw := rand.Text()
@@ -34,12 +35,12 @@ VALUES ($1, $2, $3, true, 10)
 				return err
 			}
 
-			_, err = pool.Exec(ctx, query, username, passwordHash, email)
+			_, err = pool.Exec(ctx, query, name, lastName, email, passwordHash, []string{"root"})
 			if err != nil {
 				return err
 			}
 
-			fmt.Printf("User %s added with password: %s\n", username, psw)
+			fmt.Printf("User %s added with password: %s\n", email, psw)
 			fmt.Println("Press Enter to clear...")
 			_, _ = fmt.Scanln()
 			fmt.Print("\033[2J\033[3J\033[H")
@@ -48,10 +49,10 @@ VALUES ($1, $2, $3, true, 10)
 		},
 	}
 
-	cmd.Flags().StringP("username", "u", "", "Username")
+	cmd.Flags().StringP("name", "n", "", "Name")
+	cmd.Flags().StringP("lastname", "l", "", "Lastname")
 	cmd.Flags().StringP("email", "e", "", "Email")
 
-	_ = cmd.MarkFlagRequired("username")
 	_ = cmd.MarkFlagRequired("email")
 
 	return cmd
