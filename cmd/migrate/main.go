@@ -47,6 +47,7 @@ func rootCommand(ctx context.Context) *cobra.Command {
 		newUpCommand(ctx, &dsn, &migrationsDir),
 		newUpToCommand(ctx, &dsn, &migrationsDir),
 		newDownCommand(ctx, &dsn, &migrationsDir),
+		newDownToCommand(ctx, &dsn, &migrationsDir),
 	)
 
 	return cmd
