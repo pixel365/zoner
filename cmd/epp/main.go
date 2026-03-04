@@ -14,6 +14,19 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/host"
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
 
+	"github.com/pixel365/zoner/internal/repository/limiter"
+	limiter2 "github.com/pixel365/zoner/internal/service/limiter"
+
+	"github.com/pixel365/zoner/internal/repository/auth"
+	auth2 "github.com/pixel365/zoner/internal/service/auth"
+
+	"github.com/pixel365/zoner/internal/repository/contact"
+	"github.com/pixel365/zoner/internal/repository/domain"
+	"github.com/pixel365/zoner/internal/repository/zone"
+	contact2 "github.com/pixel365/zoner/internal/service/contact"
+	domain2 "github.com/pixel365/zoner/internal/service/domain"
+	zone2 "github.com/pixel365/zoner/internal/service/zone"
+
 	"github.com/pixel365/zoner/internal/db/redis"
 
 	"github.com/pixel365/zoner/internal/db/postgres"
@@ -64,11 +77,12 @@ func main() {
 		mainLog.Error("postgres pool error", err)
 		return
 	}
+	defer pgPool.Close()
 
-	redisClient := redis.NewRedisClient(ctx, redis.NewConfigFromEnv())
-
-	cfg.DB = pgPool
-	cfg.RedisClient = redisClient
+	redisClient := redis.MustRedisClient(ctx, redis.NewConfigFromEnv())
+	defer func() {
+		_ = redisClient.Close()
+	}()
 
 	metrics := collector.NewCollector(ctx, log)
 	defer func() {
@@ -99,7 +113,19 @@ func main() {
 		}
 	}()
 
-	srv := server.MustEpp(cfg, log, metrics)
+	limiterRepo := limiter.NewRepository(redisClient)
+	authRepo := auth.NewRepository(pgPool)
+	domainRepo := domain.NewRepository(pgPool)
+	contactRepo := contact.NewRepository(pgPool)
+	zoneRepo := zone.NewRepository(pgPool)
+
+	limiterSvc := limiter2.MustService(limiterRepo)
+	authSvc := auth2.MustService(authRepo)
+	domainSvc := domain2.MustService(domainRepo)
+	contactSvc := contact2.MustService(contactRepo)
+	zoneSvc := zone2.MustService(zoneRepo)
+
+	srv := server.MustEpp(cfg, log, metrics, limiterSvc, authSvc, domainSvc, contactSvc, zoneSvc)
 	defer srv.Shutdown(context.Background())
 
 	if err := srv.Start(ctx, healthState.SetReady); err != nil {

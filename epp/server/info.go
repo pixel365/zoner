@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"errors"
 
 	"github.com/pixel365/goepp/command"
 
@@ -15,5 +14,5 @@ func handleInfo(
 	cmd command.Commander,
 	e *Epp,
 ) error {
-	return errors.New("not implemented")
+	return e.DomainService.Info(ctx)
 }

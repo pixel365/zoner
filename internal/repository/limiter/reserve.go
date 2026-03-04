@@ -1,14 +1,14 @@
-package redis
+package limiter
 
 import (
 	"context"
 	"fmt"
 	"time"
 
-	r "github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9"
 )
 
-var reserveScript = r.NewScript(`
+var reserveScript = redis.NewScript(`
 local current = tonumber(redis.call("GET", KEYS[1]) or "0")
 local limit = tonumber(ARGV[1])
 
@@ -26,27 +26,13 @@ end
 return 1
 `)
 
-var releaseScript = r.NewScript(`
-if redis.call("EXISTS", KEYS[1]) == 0 then
-	return 0
-end
-
-local nextValue = tonumber(redis.call("DECR", KEYS[1]))
-if nextValue <= 0 then
-	redis.call("DEL", KEYS[1])
-	return 0
-end
-
-return nextValue
-`)
-
-func (c *Client) Reserve(
+func (r *Repository) Reserve(
 	ctx context.Context,
 	key string,
 	limit int64,
 	ttl time.Duration,
 ) (bool, error) {
-	if c == nil || c.client == nil {
+	if r == nil || r.db == nil {
 		return false, fmt.Errorf("redis client is nil")
 	}
 
@@ -66,23 +52,10 @@ func (c *Client) Reserve(
 		}
 	}
 
-	result, err := reserveScript.Run(ctx, c.client, []string{key}, limit, ttlSeconds).Int64()
+	result, err := reserveScript.Run(ctx, r.db, []string{key}, limit, ttlSeconds).Int64()
 	if err != nil {
 		return false, err
 	}
 
 	return result == 1, nil
-}
-
-func (c *Client) Release(ctx context.Context, key string) error {
-	if c == nil || c.client == nil {
-		return fmt.Errorf("redis client is nil")
-	}
-
-	if key == "" {
-		return fmt.Errorf("empty redis key")
-	}
-
-	_, err := releaseScript.Run(ctx, c.client, []string{key}).Int64()
-	return err
 }

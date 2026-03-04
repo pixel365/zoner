@@ -9,11 +9,11 @@ import (
 
 func TestNewRedisClient(t *testing.T) {
 	assert.Panics(t, func() {
-		NewRedisClient(context.Background(), Config{})
+		MustRedisClient(context.Background(), Config{})
 	})
 
 	assert.Panics(t, func() {
-		NewRedisClient(context.Background(), Config{
+		MustRedisClient(context.Background(), Config{
 			Host: "localhost",
 			Port: "6379",
 		})

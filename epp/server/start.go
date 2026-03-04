@@ -90,7 +90,7 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 		e.Metrics.Duration(ctx, metrics.SessionDurationMs, duration)
 
 		if connection.IsAuthenticated() {
-			if err := e.Limiter.Release(ctx, connection.SessionKey()); err != nil {
+			if err := e.LimiterService.Release(ctx, connection.SessionKey()); err != nil {
 				e.Log.WithSessionId(connection.SessionId()).
 					WithUserId(connection.UserId()).
 					Error("session release failed", err)

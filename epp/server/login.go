@@ -42,7 +42,7 @@ func handleLogin(
 		return nil
 	}
 
-	maxActiveSessions, err := e.AuthRepository.Login(ctx, creds.ClientID, creds.Password)
+	maxActiveSessions, err := e.AuthService.Login(ctx, creds.ClientID, creds.Password)
 	if err != nil {
 		var (
 			errCode = 2200
@@ -69,7 +69,7 @@ func handleLogin(
 
 	connection.SetClientId(creds.ClientID)
 
-	reserved, err := e.Limiter.Reserve(
+	reserved, err := e.LimiterService.Reserve(
 		ctx,
 		connection.SessionKey(),
 		maxActiveSessions,

@@ -5,24 +5,9 @@ import (
 
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	r "github.com/redis/go-redis/v9"
-
-	"github.com/pixel365/zoner/internal/repository"
 )
 
-var _ repository.SessionLimiter = (*Client)(nil)
-
-type Client struct {
-	client *r.Client
-}
-
-func (c *Client) Close() error {
-	if c.client == nil {
-		return nil
-	}
-	return c.client.Close()
-}
-
-func NewRedisClient(ctx context.Context, cfg Config) *Client {
+func MustRedisClient(ctx context.Context, cfg Config) *r.Client {
 	if !cfg.IsValid() {
 		panic("invalid redis config")
 	}
@@ -43,7 +28,5 @@ func NewRedisClient(ctx context.Context, cfg Config) *Client {
 		panic(err)
 	}
 
-	c := &Client{client}
-
-	return c
+	return client
 }

@@ -1,0 +1,25 @@
+package auth
+
+import (
+	"context"
+
+	"github.com/pixel365/zoner/internal/repository"
+)
+
+var _ AuthService = (*Service)(nil)
+
+type AuthService interface {
+	Login(context.Context, string, string) (int64, error)
+	Logout() error
+}
+
+type Service struct {
+	repo repository.AuthRepository
+}
+
+func MustService(repo repository.AuthRepository) *Service {
+	if repo == nil {
+		panic("auth repository is nil")
+	}
+	return &Service{repo}
+}

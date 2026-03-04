@@ -18,7 +18,7 @@ func handleLogout(ctx context.Context, connection *conn2.Connection, e *Epp) err
 			return fmt.Errorf("write logout response error: %w", err)
 		}
 
-		if err := e.Limiter.Release(ctx, connection.SessionKey()); err != nil {
+		if err := e.LimiterService.Release(ctx, connection.SessionKey()); err != nil {
 			e.Log.WithSessionId(connection.SessionId()).
 				WithUserId(connection.UserId()).
 				Error("session release failed", err)

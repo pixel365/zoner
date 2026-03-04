@@ -14,7 +14,7 @@ import (
 	"github.com/pixel365/zoner/internal/stringutils/password"
 )
 
-var _ repository.Authenticator = (*Auth)(nil)
+var _ repository.AuthRepository = (*Auth)(nil)
 
 type Auth struct {
 	db repository.QueryRower
@@ -61,6 +61,6 @@ func (a *Auth) Logout() error {
 	return nil
 }
 
-func NewAuth(db repository.QueryRower) *Auth {
+func NewRepository(db repository.QueryRower) *Auth {
 	return &Auth{db}
 }
