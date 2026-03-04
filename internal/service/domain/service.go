@@ -3,13 +3,14 @@ package domain
 import (
 	"context"
 
+	"github.com/pixel365/zoner/internal/model"
 	"github.com/pixel365/zoner/internal/repository"
 )
 
 var _ DomainService = (*Service)(nil)
 
 type DomainService interface {
-	Create(context.Context) error
+	Create(context.Context, model.DomainCreateInput) error
 	Check(context.Context) error
 	Info(context.Context) error
 	Update(context.Context) error

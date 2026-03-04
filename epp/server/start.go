@@ -92,13 +92,15 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 		if connection.IsAuthenticated() {
 			if err := e.LimiterService.Release(ctx, connection.SessionKey()); err != nil {
 				e.Log.WithSessionId(connection.SessionId()).
+					WithUsername(connection.Username()).
 					WithUserId(connection.UserId()).
 					Error("session release failed", err)
 			}
 		}
 
 		if err := connection.Close(); err != nil {
-			log.WithUserId(connection.UserId()).
+			log.WithUsername(connection.Username()).
+				WithUserId(connection.UserId()).
 				WithEventDuration(duration).
 				Error("close connection error", err)
 			return
@@ -106,13 +108,17 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 
 		e := &closeError
 		if e != nil && *e != nil {
-			log.WithUserId(connection.UserId()).
+			log.WithUsername(connection.Username()).
+				WithUserId(connection.UserId()).
 				WithEventDuration(duration).
 				Error("session.close", *e)
 			return
 		}
 
-		log.WithUserId(connection.UserId()).WithEventDuration(duration).Info("session.close")
+		log.WithUsername(connection.Username()).
+			WithUserId(connection.UserId()).
+			WithEventDuration(duration).
+			Info("session.close")
 	}()
 
 	g := greeting.NewGreeting(e.Config.Greeting)

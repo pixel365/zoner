@@ -9,7 +9,7 @@ import (
 var _ AuthService = (*Service)(nil)
 
 type AuthService interface {
-	Login(context.Context, string, string) (int64, error)
+	Login(context.Context, string, string) (int64, int64, error)
 	Logout() error
 }
 

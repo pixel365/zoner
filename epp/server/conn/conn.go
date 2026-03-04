@@ -15,11 +15,12 @@ const minFrameLength = 4
 type Connection struct {
 	sessionStart  time.Time
 	conn          net.Conn
-	userId        string
+	username      string
 	sessionId     string
 	readTimeout   time.Duration
 	writeTimeout  time.Duration
 	idleTimeout   time.Duration
+	userId        int64
 	maxFrameSize  uint32
 	authenticated bool
 }
@@ -28,17 +29,25 @@ func (c *Connection) SetAuthenticated(authenticated bool) {
 	c.authenticated = authenticated
 }
 
-func (c *Connection) SetClientId(clientId string) {
-	userId := strings.ToLower(clientId)
-	userId = strings.TrimSpace(userId)
-	c.userId = strings.ToLower(userId)
+func (c *Connection) SetClientUsername(username string) {
+	username = strings.ToLower(username)
+	username = strings.TrimSpace(username)
+	c.username = strings.ToLower(username)
+}
+
+func (c *Connection) SetUserId(userId int64) {
+	c.userId = userId
 }
 
 func (c *Connection) SessionKey() string {
-	return "active:session:" + c.userId
+	return "active:session:" + c.username
 }
 
-func (c *Connection) UserId() string {
+func (c *Connection) Username() string {
+	return c.username
+}
+
+func (c *Connection) UserId() int64 {
 	return c.userId
 }
 

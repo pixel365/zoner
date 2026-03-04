@@ -10,7 +10,8 @@ type Logger interface {
 	Logf(string, ...any)
 	Component(string) Logger
 	Func(string) Logger
-	WithUserId(string) Logger
+	WithUsername(string) Logger
+	WithUserId(int64) Logger
 	WithSessionId(string) Logger
 	WithAddress(string) Logger
 	WithEventDuration(time.Duration) Logger

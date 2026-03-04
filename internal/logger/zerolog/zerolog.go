@@ -78,13 +78,25 @@ func (o *Log) Func(name string) logger.Logger {
 	return &Log{logger: l}
 }
 
-func (o *Log) WithUserId(id string) logger.Logger {
+func (o *Log) WithUsername(id string) logger.Logger {
 	if id == "" {
 		return o
 	}
 
 	l := o.logger.With().
-		Str("user.id", id).
+		Str("username", id).
+		Logger()
+
+	return &Log{logger: l}
+}
+
+func (o *Log) WithUserId(id int64) logger.Logger {
+	if id <= 0 {
+		return o
+	}
+
+	l := o.logger.With().
+		Int64("user.id", id).
 		Logger()
 
 	return &Log{logger: l}

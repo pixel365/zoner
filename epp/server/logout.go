@@ -20,7 +20,7 @@ func handleLogout(ctx context.Context, connection *conn2.Connection, e *Epp) err
 
 		if err := e.LimiterService.Release(ctx, connection.SessionKey()); err != nil {
 			e.Log.WithSessionId(connection.SessionId()).
-				WithUserId(connection.UserId()).
+				WithUsername(connection.Username()).
 				Error("session release failed", err)
 		}
 

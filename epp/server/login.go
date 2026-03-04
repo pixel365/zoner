@@ -42,7 +42,7 @@ func handleLogin(
 		return nil
 	}
 
-	maxActiveSessions, err := e.AuthService.Login(ctx, creds.ClientID, creds.Password)
+	userId, maxActiveSessions, err := e.AuthService.Login(ctx, creds.ClientID, creds.Password)
 	if err != nil {
 		var (
 			errCode = 2200
@@ -56,7 +56,8 @@ func handleLogin(
 		}
 
 		e.Log.WithSessionId(connection.SessionId()).
-			WithUserId(creds.ClientID).
+			WithUsername(creds.ClientID).
+			WithUserId(userId).
 			Error("login failed", err)
 
 		errorResponse := response.AnyError(errCode, errType)
@@ -67,7 +68,8 @@ func handleLogin(
 		return nil
 	}
 
-	connection.SetClientId(creds.ClientID)
+	connection.SetClientUsername(creds.ClientID)
+	connection.SetUserId(userId)
 
 	reserved, err := e.LimiterService.Reserve(
 		ctx,
@@ -77,7 +79,8 @@ func handleLogin(
 	)
 	if err != nil {
 		e.Log.WithSessionId(connection.SessionId()).
-			WithUserId(creds.ClientID).
+			WithUsername(creds.ClientID).
+			WithUserId(userId).
 			Error("session reserve failed", err)
 		errorResponse := response.AnyError(2400, response.CommandFailed)
 		if err = connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
@@ -88,7 +91,8 @@ func handleLogin(
 
 	if !reserved {
 		e.Log.WithSessionId(connection.SessionId()).
-			WithUserId(creds.ClientID).
+			WithUsername(creds.ClientID).
+			WithUserId(userId).
 			Info("session limit exceeded")
 		errorResponse := response.AnyError(
 			2502,
@@ -107,7 +111,10 @@ func handleLogin(
 	}
 
 	e.Metrics.Inc(ctx, metrics.AuthSuccessTotal)
-	e.Log.WithSessionId(connection.SessionId()).WithUserId(creds.ClientID).Info("login successful")
+	e.Log.WithSessionId(connection.SessionId()).
+		WithUsername(creds.ClientID).
+		WithUserId(userId).
+		Info("login successful")
 
 	return nil
 }

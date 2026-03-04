@@ -2,37 +2,33 @@
 -- +goose StatementBegin
 CREATE OR REPLACE FUNCTION zones_available_periods_is_valid(periods INT2[]) RETURNS BOOLEAN AS
 $$
-SELECT
-    cardinality(periods) > 0
-    AND NOT EXISTS (
-        SELECT 1
-        FROM unnest(periods) AS p
-        WHERE p IS NULL OR p <= 0
-    )
-    AND (
-        SELECT COUNT(*) = COUNT(DISTINCT p)
-        FROM unnest(periods) AS p
-    );
+SELECT cardinality(periods) > 0
+           AND NOT EXISTS (SELECT 1
+                           FROM unnest(periods) AS p
+                           WHERE p IS NULL
+                              OR p <= 0)
+           AND (SELECT COUNT(*) = COUNT(DISTINCT p)
+                FROM unnest(periods) AS p);
 $$ LANGUAGE SQL IMMUTABLE;
 -- +goose StatementEnd
 
 CREATE TABLE IF NOT EXISTS zones
 (
-    id                             BIGSERIAL PRIMARY KEY,
-    name                           TEXT                                  NOT NULL,
-    is_active                      BOOLEAN                               NOT NULL DEFAULT TRUE,
-    available_periods              INT2[]                               NOT NULL DEFAULT ARRAY [1]::INT2[],
-    add_grace_period_days          INT2                                 NOT NULL DEFAULT 0,
-    renew_grace_period_days        INT2                                 NOT NULL DEFAULT 0,
-    transfer_grace_period_days     INT2                                 NOT NULL DEFAULT 0,
-    redemption_grace_period_days   INT2                                 NOT NULL DEFAULT 0,
-    pending_delete_period_days     INT2                                 NOT NULL DEFAULT 0,
-    restore_grace_period_days      INT2                                 NOT NULL DEFAULT 0,
-    created_at                     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at                     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    id                           BIGSERIAL PRIMARY KEY,
+    name                         TEXT    NOT NULL,
+    is_active                    BOOLEAN NOT NULL DEFAULT TRUE,
+    available_periods            INT2[]  NOT NULL DEFAULT ARRAY [1]::INT2[],
+    add_grace_period_days        INT2    NOT NULL DEFAULT 0,
+    renew_grace_period_days      INT2    NOT NULL DEFAULT 0,
+    transfer_grace_period_days   INT2    NOT NULL DEFAULT 0,
+    redemption_grace_period_days INT2    NOT NULL DEFAULT 0,
+    pending_delete_period_days   INT2    NOT NULL DEFAULT 0,
+    restore_grace_period_days    INT2    NOT NULL DEFAULT 0,
+    created_at                   TIMESTAMPTZ      DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at                   TIMESTAMPTZ      DEFAULT CURRENT_TIMESTAMP NOT NULL,
 
     CONSTRAINT zones_name_check CHECK (
-        starts_with(lower(name), '.') AND char_length(name) > 1 AND char_length(name) < 63
+        starts_with(lower(name), '.') AND char_length(name) > 1 AND char_length(name) < 64
         ),
     CONSTRAINT zones_available_periods_check CHECK (zones_available_periods_is_valid(available_periods)),
     CONSTRAINT zones_add_grace_period_days_check CHECK (add_grace_period_days >= 0),
@@ -61,10 +57,10 @@ CREATE OR REPLACE FUNCTION zones_sort_available_periods() RETURNS TRIGGER AS
 $$
 BEGIN
     NEW.available_periods = ARRAY(
-        SELECT p
-        FROM unnest(NEW.available_periods) AS p
-        ORDER BY p
-    );
+            SELECT p
+            FROM unnest(NEW.available_periods) AS p
+            ORDER BY p
+                            );
     RETURN NEW;
 END;
 $$ language 'plpgsql';
