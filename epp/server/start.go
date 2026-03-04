@@ -181,6 +181,7 @@ func parseFrame(
 	return cmd, nil
 }
 
+//nolint:gocyclo,cyclop
 func sendResponse(
 	ctx context.Context,
 	connection *conn2.Connection,
@@ -191,6 +192,14 @@ func sendResponse(
 		return nil
 	}
 
+	if cmd.NeedAuth() && !connection.IsAuthenticated() {
+		errorResponse := response.AnyError(2200, response.AuthorizationError)
+		if err := connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
+			return fmt.Errorf("write error response when client is not authenticated: %w", err)
+		}
+		return nil
+	}
+
 	switch {
 	case cmd.Name() == command.Hello:
 		return handleHello(ctx, connection, e)
@@ -198,14 +207,22 @@ func sendResponse(
 		return handleLogin(ctx, connection, cmd, e)
 	case cmd.Name() == command.Logout:
 		return handleLogout(ctx, connection, e)
-	}
-
-	if cmd.NeedAuth() && !connection.IsAuthenticated() {
-		errorResponse := response.AnyError(2200, response.AuthorizationError)
-		if err := connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
-			return fmt.Errorf("write error response when client is not authenticated: %w", err)
-		}
-		return nil
+	case cmd.Name() == command.Create:
+		return handleCreate(ctx, connection, cmd, e)
+	case cmd.Name() == command.Delete:
+		return handleDelete(ctx, connection, cmd, e)
+	case cmd.Name() == command.Info:
+		return handleInfo(ctx, connection, cmd, e)
+	case cmd.Name() == command.Update:
+		return handleUpdate(ctx, connection, cmd, e)
+	case cmd.Name() == command.Check:
+		return handleCheck(ctx, connection, cmd, e)
+	case cmd.Name() == command.Transfer:
+		return handleTransfer(ctx, connection, cmd, e)
+	case cmd.Name() == command.Renew:
+		return handleRenew(ctx, connection, cmd, e)
+	case cmd.Name() == command.Poll:
+		return handlePoll(ctx, connection, cmd, e)
 	}
 
 	errorResponse := response.AnyError(2101, response.UnimplementedCommand)
