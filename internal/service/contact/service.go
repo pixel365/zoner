@@ -3,6 +3,7 @@ package contact
 import (
 	"context"
 
+	"github.com/pixel365/zoner/internal/model"
 	"github.com/pixel365/zoner/internal/repository"
 )
 
@@ -11,6 +12,7 @@ var _ ContactService = (*Service)(nil)
 type ContactService interface {
 	Info(context.Context) error
 	Check(context.Context) error
+	Create(context.Context, model.ContactCreateInput) error
 }
 
 type Service struct {

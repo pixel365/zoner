@@ -1,4 +1,11 @@
 package repository
 
-//nolint:iface
-type ContactRepository interface{}
+import (
+	"context"
+
+	"github.com/pixel365/zoner/internal/model"
+)
+
+type ContactRepository interface {
+	Create(context.Context, model.ContactCreateInput) (string, error)
+}

@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS domains_contacts
     contact_id BIGINT                                        NOT NULL,
     role       domain_contact_role DEFAULT 'registrant'      NOT NULL,
     created_at TIMESTAMPTZ         DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    
     CONSTRAINT fk_domain_id FOREIGN KEY (domain_id) REFERENCES domains (id),
     CONSTRAINT fk_contact_id FOREIGN KEY (contact_id) REFERENCES contacts (id)
 );
