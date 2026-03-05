@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS contacts
     CONSTRAINT contacts_disclose_check CHECK (contacts_disclose_is_valid(disclose))
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS contacts_contact_id_idx ON contacts (lower(contact_id));
+CREATE UNIQUE INDEX IF NOT EXISTS contacts_contact_id_registrar_id_idx ON contacts (lower(contact_id), registrar_id);
 CREATE INDEX IF NOT EXISTS contacts_registrar_id_idx ON contacts (registrar_id);
 CREATE INDEX IF NOT EXISTS contacts_email_idx ON contacts (lower(email));
 CREATE INDEX IF NOT EXISTS contacts_deleted_at_idx ON contacts (deleted_at);
@@ -113,7 +113,7 @@ COMMENT ON COLUMN contacts.updated_by_client_id IS 'EPP client identifier that l
 COMMENT ON COLUMN contacts.deleted_at IS 'Soft-delete timestamp; NULL means active.';
 
 -- +goose Down
-DROP INDEX IF EXISTS contacts_contact_id_idx;
+DROP INDEX IF EXISTS contacts_contact_id_registrar_id_idx;
 DROP INDEX IF EXISTS contacts_registrar_id_idx;
 DROP INDEX IF EXISTS contacts_email_idx;
 DROP INDEX IF EXISTS contacts_deleted_at_idx;
