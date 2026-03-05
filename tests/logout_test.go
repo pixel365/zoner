@@ -1,0 +1,114 @@
+package tests
+
+import (
+	"crypto/tls"
+	"fmt"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func TestLogoutSuccess(t *testing.T) {
+	addr := netAddr()
+	conn, err := tls.Dial("tcp", addr, &tls.Config{
+		MinVersion:         tls.VersionTLS12,
+		InsecureSkipVerify: true, //nolint:gosec
+	})
+
+	require.NoError(t, err)
+
+	_ = conn.SetDeadline(time.Now().Add(10 * time.Second))
+	_, _ = readEPPFrame(conn)
+
+	payload := fmt.Sprintf(`
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
+    <command>
+        <login>
+            <clID>%s</clID>
+            <pw>%s</pw>
+            <options>
+                <version>1.0</version>
+                <lang>en</lang>
+            </options>
+            <svcs>
+                <objURI>urn:ietf:params:xml:ns:obj1</objURI>
+                <objURI>urn:ietf:params:xml:ns:obj2</objURI>
+                <objURI>urn:ietf:params:xml:ns:obj3</objURI>
+                <svcExtension>
+                    <extURI>http://custom/obj1ext-1.0</extURI>
+                </svcExtension>
+            </svcs>
+        </login>
+        <clTRID>ABC-12345</clTRID>
+    </command>
+</epp>
+`, testingRegistrarUsername, testingRegistrarPassword)
+
+	err = writeEPPFrame(conn, []byte(payload))
+	require.NoError(t, err)
+
+	resp, err := readEPPFrame(conn)
+	require.NoError(t, err)
+
+	assert.Contains(t, string(resp), "Command completed successfully")
+
+	payload = `
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
+    <command>
+        <logout/>
+        <clTRID>ABC-12345</clTRID>
+    </command>
+</epp>
+`
+
+	err = writeEPPFrame(conn, []byte(payload))
+	require.NoError(t, err)
+
+	resp, err = readEPPFrame(conn)
+	require.NoError(t, err)
+
+	assert.Contains(t, string(resp), "Command completed successfully; ending session")
+
+	t.Cleanup(func() {
+		_ = conn.Close()
+	})
+}
+
+func TestUnauthorizedLogoutFail(t *testing.T) {
+	addr := netAddr()
+	conn, err := tls.Dial("tcp", addr, &tls.Config{
+		MinVersion:         tls.VersionTLS12,
+		InsecureSkipVerify: true, //nolint:gosec
+	})
+
+	require.NoError(t, err)
+
+	_ = conn.SetDeadline(time.Now().Add(10 * time.Second))
+	_, _ = readEPPFrame(conn)
+
+	payload := `
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
+    <command>
+        <logout/>
+        <clTRID>ABC-12345</clTRID>
+    </command>
+</epp>
+`
+
+	err = writeEPPFrame(conn, []byte(payload))
+	require.NoError(t, err)
+
+	resp, err := readEPPFrame(conn)
+	require.NoError(t, err)
+
+	assert.Contains(t, string(resp), "Authorization error")
+
+	t.Cleanup(func() {
+		_ = conn.Close()
+	})
+}
