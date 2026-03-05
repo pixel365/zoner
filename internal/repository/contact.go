@@ -7,5 +7,5 @@ import (
 )
 
 type ContactRepository interface {
-	Create(context.Context, model.ContactCreateInput) (string, error)
+	Create(context.Context, model.ContactCreateInput) (int64, error)
 }

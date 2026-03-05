@@ -128,8 +128,8 @@ github.com/opencontainers/image-spec v1.1.1 h1:y0fUlFfIZhPF1W537XOLg0/fcx6zcHCJw
 github.com/opencontainers/image-spec v1.1.1/go.mod h1:qpqAh3Dmcf36wStyyWU+kCeDgrGnAve2nCC8+7h8Q0M=
 github.com/pixel365/domain-normalizer v0.0.2 h1:Hs7t7QHjDWtnKIDim44MQ2DDA0LYqbgVdYhXL4qonbA=
 github.com/pixel365/domain-normalizer v0.0.2/go.mod h1:RoDgPueqiYtNURgODd3rsCKpqCyeJZaPa4O2uExjYeA=
-github.com/pixel365/goepp v0.0.2 h1:Uh+d29sP2WOZWU/ZdCghyS2VbRaq3fG3AjpDeWibHd0=
-github.com/pixel365/goepp v0.0.2/go.mod h1:Vd7mNoNx9spKiWNl8FSAoYrK4vpSdi+pJSzl2eInyVM=
+github.com/pixel365/goepp v0.0.3 h1:luDjo+Ci9ok0QtXBqegtbWzKIj6GNKfrjUkQk91D17I=
+github.com/pixel365/goepp v0.0.3/go.mod h1:Vd7mNoNx9spKiWNl8FSAoYrK4vpSdi+pJSzl2eInyVM=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

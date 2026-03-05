@@ -3,6 +3,8 @@ package contact
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 
@@ -10,22 +12,23 @@ import (
 	"github.com/pixel365/zoner/internal/model"
 )
 
-func (r *Repository) Create(ctx context.Context, data model.ContactCreateInput) (string, error) {
+func (r *Repository) Create(
+	ctx context.Context,
+	data model.ContactCreateInput,
+) (int64, error) {
 	var contactId int64
-	var roid string
 	err := postgres.Tx(ctx, r.db, pgx.Serializable,
-		insertContact(ctx, data, &contactId, &roid),
+		insertContact(ctx, data, &contactId),
 		insertContactPostalInfo(ctx, data.PostalInfo, &contactId),
 	)
 
-	return roid, err
+	return contactId, err
 }
 
 func insertContact(
 	ctx context.Context,
 	data model.ContactCreateInput,
 	contactId *int64,
-	roid *string,
 ) func(tx pgx.Tx) error {
 	sql := `
 INSERT INTO contacts (
@@ -39,7 +42,7 @@ INSERT INTO contacts (
                       auth_info_hash,
                       disclose
 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb)
-RETURNING id, roid
+RETURNING id
 `
 	var disclose any = struct{}{}
 	if data.Disclose != nil {
@@ -51,8 +54,30 @@ RETURNING id, roid
 	return func(tx pgx.Tx) error {
 		err := tx.QueryRow(ctx, sql,
 			data.ContactID, data.RegistrarID, data.Name, data.Email, data.Organization,
-			data.Voice, data.Fax, data.AuthInfoHash, b).Scan(contactId, roid)
-		return err
+			data.Voice, data.Fax, data.AuthInfoHash, b).Scan(contactId)
+
+		if err == nil {
+			return nil
+		}
+
+		switch {
+		case strings.Contains(err.Error(), "duplicate key value violates unique constraint"):
+			return fmt.Errorf(
+				"%w, contact with id %s already exists",
+				ErrAlreadyExists,
+				data.ContactID,
+			)
+		case strings.Contains(err.Error(), "violates foreign key constraint"):
+			return fmt.Errorf(
+				"%w, registrar with id %d does not exist",
+				ErrValidation,
+				data.RegistrarID,
+			)
+		case strings.Contains(err.Error(), "violates check constraint \"contacts_disclose_check\""):
+			return fmt.Errorf("%w, invalid contact disclose data", ErrValidation)
+		default:
+			return fmt.Errorf("%w, %w", ErrInternal, err)
+		}
 	}
 }
 
@@ -97,7 +122,16 @@ INSERT INTO contacts_postal_info (
 				data[i].StateProvince,
 			)
 			if err != nil {
-				return err
+				switch {
+				case strings.Contains(err.Error(), "violates foreign key constraint"):
+					return fmt.Errorf(
+						"%w, contact with id %d does not exist",
+						ErrValidation,
+						*contactId,
+					)
+				default:
+					return fmt.Errorf("%w, %w", ErrInternal, err)
+				}
 			}
 		}
 		return nil

@@ -122,7 +122,7 @@ func main() {
 	limiterSvc := limiter2.MustService(limiterRepo)
 	authSvc := auth2.MustService(authRepo)
 	domainSvc := domain2.MustService(domainRepo)
-	contactSvc := contact2.MustService(contactRepo)
+	contactSvc := contact2.MustService(contactRepo, log)
 	zoneSvc := zone2.MustService(zoneRepo)
 
 	srv := server.MustEpp(cfg, log, metrics, limiterSvc, authSvc, domainSvc, contactSvc, zoneSvc)

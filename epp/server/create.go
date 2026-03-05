@@ -20,82 +20,24 @@ func handleCreate(
 	cmd command.Commander,
 	e *Epp,
 ) error {
-	data, _ := cmd.(*create.Create)
+	var resp response.Marshaller
 
-	if data.Host != nil {
-		errResponse := response.AnyError(2101, response.UnimplementedCommand)
-		if err := connection.Write(ctx, errResponse, e.Metrics.IncBytes); err != nil {
-			return fmt.Errorf("write error response for unimplemented command: %w", err)
-		}
-		return nil
-	}
+	data, _ := cmd.(*create.Create)
 
 	switch {
 	case data.Domain != nil:
 		return createDomain(ctx, connection, e, *data.Domain)
 	case data.Contact != nil:
-		return createContact(ctx, connection, e, *data.Contact)
+		resp = e.ContactService.Create(ctx, *data.Contact, connection.UserId())
 	default:
-		return nil
-	}
-}
-
-func createContact(
-	ctx context.Context,
-	connection *conn.Connection,
-	e *Epp,
-	data create.Contact,
-) error {
-	passwordHash, _ := password.Hash(data.AuthInfo.Password, password.DefaultParams)
-
-	contact := model.ContactCreateInput{
-		ContactID:    data.ID,
-		Name:         "",
-		Organization: "",
-		Email:        data.Email,
-		Voice:        data.Voice.Num,
-		Fax:          data.Fax.Num,
-		AuthInfoHash: passwordHash,
-		Disclose:     nil,
-		RegistrarID:  connection.UserId(),
+		resp = response.AnyError(2101, response.UnimplementedCommand)
 	}
 
-	if len(data.PostalInfo) > 0 {
-		contact.PostalInfo = make([]model.ContactPostalFields, 0, len(data.PostalInfo))
-
-		for i := range data.PostalInfo {
-			info := model.ContactPostalFields{
-				Typ:           string(data.PostalInfo[i].Type),
-				PostalName:    data.PostalInfo[i].Name,
-				PostalOrg:     data.PostalInfo[i].Org,
-				PostalCode:    data.PostalInfo[i].Addr.Pc,
-				City:          data.PostalInfo[i].Addr.City,
-				Country:       data.PostalInfo[i].Addr.Cc,
-				Streets:       data.PostalInfo[i].Addr.Street,
-				StateProvince: data.PostalInfo[i].Addr.Sp,
-			}
-
-			contact.PostalInfo = append(contact.PostalInfo, info)
-		}
+	if err := connection.Write(ctx, resp, e.Metrics.IncBytes); err != nil {
+		return fmt.Errorf("write response error: %w", err)
 	}
 
-	if data.Disclose != nil && len(data.Disclose.Items) > 0 {
-		disclose := &model.Disclose{
-			Flag:   uint8(data.Disclose.Flag),
-			Fields: make([]string, 0, len(data.Disclose.Items)),
-		}
-		di := map[string]struct{}{}
-		for i := range data.Disclose.Items {
-			di[data.Disclose.Items[i].Name] = struct{}{}
-		}
-		for k := range di {
-			disclose.Fields = append(disclose.Fields, k)
-		}
-
-		contact.Disclose = disclose
-	}
-
-	return e.ContactService.Create(ctx, contact)
+	return nil
 }
 
 func createDomain(

@@ -60,7 +60,7 @@ func handleLogin(
 			WithUserId(userId).
 			Error("login failed", err)
 
-		errorResponse := response.AnyError(errCode, errType)
+		errorResponse := response.AnyError(response.ResponseCode(errCode), errType)
 		if err = connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
 			return fmt.Errorf("write error response for invalid login credentials: %w", err)
 		}

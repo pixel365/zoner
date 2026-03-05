@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS contacts
 (
     id                   BIGSERIAL PRIMARY KEY,
     contact_id           TEXT                                  NOT NULL,
-    roid                 TEXT                                  NOT NULL UNIQUE,
+    roid                 TEXT                                  NOT NULL,
     registrar_id         BIGINT                                NOT NULL,
     name                 TEXT                                  NOT NULL,
     email                TEXT                                  NOT NULL,
@@ -52,6 +52,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS contacts_contact_id_idx ON contacts (lower(con
 CREATE INDEX IF NOT EXISTS contacts_registrar_id_idx ON contacts (registrar_id);
 CREATE INDEX IF NOT EXISTS contacts_email_idx ON contacts (lower(email));
 CREATE INDEX IF NOT EXISTS contacts_deleted_at_idx ON contacts (deleted_at);
+CREATE UNIQUE INDEX IF NOT EXISTS contacts_roid_idx ON contacts (upper(roid));
 
 -- +goose StatementBegin
 CREATE OR REPLACE FUNCTION contacts_set_roid() RETURNS TRIGGER AS
@@ -116,6 +117,7 @@ DROP INDEX IF EXISTS contacts_contact_id_idx;
 DROP INDEX IF EXISTS contacts_registrar_id_idx;
 DROP INDEX IF EXISTS contacts_email_idx;
 DROP INDEX IF EXISTS contacts_deleted_at_idx;
+DROP INDEX IF EXISTS contacts_roid_idx;
 DROP TRIGGER IF EXISTS contacts_set_roid_trigger ON contacts;
 DROP TRIGGER IF EXISTS contacts_set_updated_at_trigger ON contacts;
 DROP FUNCTION IF EXISTS contacts_set_roid();
