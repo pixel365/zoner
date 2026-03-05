@@ -38,7 +38,7 @@ func NewHealthServer(state *State) *http.Server {
 
 	addr := os.Getenv("HEALTH_LISTEN_ADDR")
 	if addr == "" {
-		addr = ":8081"
+		return nil
 	}
 
 	mux := http.NewServeMux()

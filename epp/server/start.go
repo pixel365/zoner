@@ -14,6 +14,8 @@ import (
 	"github.com/pixel365/goepp/command/greeting"
 	"github.com/pixel365/goepp/response"
 
+	"github.com/pixel365/zoner/internal/logger"
+
 	"github.com/pixel365/zoner/internal/observability/metrics"
 
 	conn2 "github.com/pixel365/zoner/epp/server/conn"
@@ -145,7 +147,7 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 				return
 			}
 
-			cmd, err := parseFrame(ctx, connection, &parser, frame, e)
+			cmd, err := parseFrame(ctx, connection, &parser, frame, e, log)
 			if err != nil {
 				closeError = fmt.Errorf("parse frame error: %w", err)
 				return
@@ -159,6 +161,7 @@ func (e *Epp) handleConnection(ctx context.Context, conn net.Conn) {
 			}
 
 			if err != nil {
+				log.Error("send response error", err)
 				closeError = fmt.Errorf("send response error: %w", err)
 				e.Metrics.Inc(ctx, metrics.CommandsWithErrorsTotal)
 				return
@@ -173,9 +176,13 @@ func parseFrame(
 	parser *goepp.CmdParser,
 	frame []byte,
 	e *Epp,
+	log logger.Logger,
 ) (command.Commander, error) {
 	cmd, err := parser.Parse(frame)
 	if err != nil {
+		log.WithUserId(connection.UserId()).
+			WithUsername(connection.Username()).
+			Error("parse frame error", err)
 		e.Metrics.Inc(ctx, metrics.ParseErrorsTotal)
 		errorResponse := response.AnyError(2001, response.CommandSyntaxError)
 		if err = connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {

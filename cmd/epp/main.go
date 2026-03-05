@@ -96,20 +96,24 @@ func main() {
 
 	healthState := health.NewState()
 	healthServer := health.NewHealthServer(healthState)
-	go func() {
-		if err := healthServer.ListenAndServe(); err != nil &&
-			!errors.Is(err, http.ErrServerClosed) {
-			mainLog.Error("health server start error", err)
-		}
-	}()
+	if healthServer != nil {
+		go func() {
+			if err := healthServer.ListenAndServe(); err != nil &&
+				!errors.Is(err, http.ErrServerClosed) {
+				mainLog.Error("health server start error", err)
+			}
+		}()
+	}
 
 	defer func() {
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		if err := healthServer.Shutdown(shutdownCtx); err != nil &&
-			!errors.Is(err, http.ErrServerClosed) {
-			mainLog.Error("health server shutdown error", err)
+		if healthServer != nil {
+			if err := healthServer.Shutdown(shutdownCtx); err != nil &&
+				!errors.Is(err, http.ErrServerClosed) {
+				mainLog.Error("health server shutdown error", err)
+			}
 		}
 	}()
 

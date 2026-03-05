@@ -68,7 +68,17 @@ func eppUp(ctx context.Context) {
 			},
 		},
 		Env: map[string]string{
-			"CONFIG_PATH": "/app/config.dev.yaml",
+			"CONFIG_PATH":       "/app/config.dev.yaml",
+			"POSTGRES_DB":       PostgresDb,
+			"POSTGRES_USER":     PostgresUser,
+			"POSTGRES_PASSWORD": PostgresPassword,
+			"POSTGRES_HOST":     "testing-postgres",
+			"POSTGRES_PORT":     "5432",
+			"POSTGRES_SSL_MODE": "disable",
+			"REDIS_HOST":        "testing-redis",
+			"REDIS_PORT":        "6379",
+			"REDIS_USERNAME":    RedisUsername,
+			"REDIS_PASSWORD":    RedisPassword,
 		},
 	}
 
