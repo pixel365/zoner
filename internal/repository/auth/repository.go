@@ -1,68 +1,17 @@
 package auth
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"strings"
-
-	"github.com/jackc/pgx/v5"
-
-	e "github.com/pixel365/zoner/internal/errors"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/pixel365/zoner/internal/repository"
-	"github.com/pixel365/zoner/internal/stringutils/password"
 )
 
 var _ repository.AuthRepository = (*Auth)(nil)
 
 type Auth struct {
-	db repository.QueryRower
+	db *pgxpool.Pool
 }
 
-func (a *Auth) Login(ctx context.Context, username, psw string) (int64, int64, error) {
-	var userId int64
-	var maxActiveSessions int64
-
-	username = strings.ToLower(username)
-	username = strings.TrimSpace(username)
-	if username == "" {
-		return userId, maxActiveSessions, e.ErrInvalidCredentials
-	}
-
-	psw = strings.TrimSpace(psw)
-	if psw == "" {
-		return userId, maxActiveSessions, e.ErrInvalidCredentials
-	}
-
-	var passwordHash string
-	err := a.db.QueryRow(ctx,
-		`SELECT id, password_hash, max_active_sessions FROM registrars WHERE username = $1`,
-		username).Scan(&userId, &passwordHash, &maxActiveSessions)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return userId, maxActiveSessions, e.ErrInvalidCredentials
-	}
-
-	if err != nil {
-		return 0, 0, fmt.Errorf("%w: %w", e.ErrInternalError, err)
-	}
-
-	ok, err := password.Verify(psw, passwordHash)
-	if err != nil {
-		return userId, maxActiveSessions, fmt.Errorf("%w: %w", e.ErrInternalError, err)
-	}
-
-	if !ok {
-		return userId, maxActiveSessions, e.ErrInvalidCredentials
-	}
-
-	return userId, maxActiveSessions, nil
-}
-
-func (a *Auth) Logout() error {
-	return nil
-}
-
-func NewRepository(db repository.QueryRower) *Auth {
+func NewRepository(db *pgxpool.Pool) *Auth {
 	return &Auth{db}
 }

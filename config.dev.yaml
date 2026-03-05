@@ -11,6 +11,7 @@ epp:
   readTimeout: 30
   writeTimeout: 10
   activeSessionTtl: 3600
+  minPasswordLength: 8
 
   greeting:
     sv_id: "zoner"

@@ -4,53 +4,76 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/pixel365/goepp/command"
 	"github.com/pixel365/goepp/command/login"
 	"github.com/pixel365/goepp/response"
 
+	"github.com/pixel365/zoner/internal/repository/auth"
+
 	conn2 "github.com/pixel365/zoner/epp/server/conn"
-	errors2 "github.com/pixel365/zoner/internal/errors"
 	"github.com/pixel365/zoner/internal/observability/metrics"
 )
 
+//nolint:gocognit,gocyclo,cyclop
 func handleLogin(
 	ctx context.Context,
 	connection *conn2.Connection,
 	cmd command.Commander,
 	e *Epp,
 ) error {
-	if connection.IsAuthenticated() {
-		errorResponse := response.AnyError(2302, "Already logged in")
-		if err := connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
-			return fmt.Errorf("write error response when client is authenticated: %w", err)
-		}
-		return nil
-	}
-
 	creds, ok := cmd.(*login.Login)
 	if !ok {
 		e.Metrics.Inc(ctx, metrics.AuthFailureTotal)
 		e.Log.WithSessionId(connection.SessionId()).
 			Error("cast failed", errors.New("invalid credentials type"))
 
-		errorResponse := response.AnyError(2002, response.CommandUseError)
+		errorResponse := response.AnyError(response.CodeCommandUseError, response.CommandUseError)
 		if err := connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
 			return fmt.Errorf("write error response for invalid login command: %w", err)
 		}
 		return nil
 	}
 
-	userId, maxActiveSessions, err := e.AuthService.Login(ctx, creds.ClientID, creds.Password)
+	creds.NewPassword = strings.TrimSpace(creds.NewPassword)
+
+	if connection.IsAuthenticated() && creds.NewPassword == "" {
+		errorResponse := response.AnyError(response.CodeObjectExists, "Already logged in")
+		if err := connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
+			return fmt.Errorf("write error response when client is authenticated: %w", err)
+		}
+		return nil
+	}
+
+	if creds.NewPassword != "" && len(creds.NewPassword) < e.Config.MinPasswordLength {
+		errorResponse := response.AnyError(
+			response.CodeParameterValueSyntaxError,
+			fmt.Sprintf(
+				"password length must be at least %d characters",
+				e.Config.MinPasswordLength,
+			),
+		)
+		if err := connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
+			return fmt.Errorf("write error response for invalid password length: %w", err)
+		}
+		return nil
+	}
+
+	userId, maxActiveSessions, err := e.AuthService.Login(ctx, creds)
 	if err != nil {
 		var (
 			errCode = 2200
 			errType = response.AuthenticationError
 		)
-		if errors.Is(err, errors2.ErrInvalidCredentials) {
+
+		switch {
+		case errors.Is(err, auth.ErrInvalidCredentials),
+			errors.Is(err, auth.ErrRegistrarIsBlocked),
+			errors.Is(err, auth.ErrCannotChangePassword):
 			e.Metrics.Inc(ctx, metrics.AuthFailureTotal)
-		} else {
+		default:
 			errCode = 2400
 			errType = response.CommandFailed
 		}
@@ -71,37 +94,39 @@ func handleLogin(
 	connection.SetClientUsername(creds.ClientID)
 	connection.SetUserId(userId)
 
-	reserved, err := e.LimiterService.Reserve(
-		ctx,
-		connection.SessionKey(),
-		maxActiveSessions,
-		time.Duration(e.Config.ActiveSessionTtl)*time.Second,
-	)
-	if err != nil {
-		e.Log.WithSessionId(connection.SessionId()).
-			WithUsername(creds.ClientID).
-			WithUserId(userId).
-			Error("session reserve failed", err)
-		errorResponse := response.AnyError(2400, response.CommandFailed)
-		if err = connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
-			return fmt.Errorf("write error response for session reserve error: %w", err)
-		}
-		return nil
-	}
-
-	if !reserved {
-		e.Log.WithSessionId(connection.SessionId()).
-			WithUsername(creds.ClientID).
-			WithUserId(userId).
-			Info("session limit exceeded")
-		errorResponse := response.AnyError(
-			2502,
-			response.SessionLimitExceededServerClosingConnection,
+	if creds.NewPassword == "" {
+		reserved, err := e.LimiterService.Reserve(
+			ctx,
+			connection.SessionKey(),
+			maxActiveSessions,
+			time.Duration(e.Config.ActiveSessionTtl)*time.Second,
 		)
-		if err = connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
-			return fmt.Errorf("write error response for session limit exceeded: %w", err)
+		if err != nil {
+			e.Log.WithSessionId(connection.SessionId()).
+				WithUsername(creds.ClientID).
+				WithUserId(userId).
+				Error("session reserve failed", err)
+			errorResponse := response.AnyError(2400, response.CommandFailed)
+			if err = connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
+				return fmt.Errorf("write error response for session reserve error: %w", err)
+			}
+			return nil
 		}
-		return errSessionTerminate
+
+		if !reserved {
+			e.Log.WithSessionId(connection.SessionId()).
+				WithUsername(creds.ClientID).
+				WithUserId(userId).
+				Info("session limit exceeded")
+			errorResponse := response.AnyError(
+				2502,
+				response.SessionLimitExceededServerClosingConnection,
+			)
+			if err = connection.Write(ctx, errorResponse, e.Metrics.IncBytes); err != nil {
+				return fmt.Errorf("write error response for session limit exceeded: %w", err)
+			}
+			return errSessionTerminate
+		}
 	}
 
 	connection.SetAuthenticated(true)

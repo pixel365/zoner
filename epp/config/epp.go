@@ -7,12 +7,13 @@ import (
 )
 
 type Epp struct {
-	ListenAddr       string                 `yaml:"listenAddr"`
-	Greeting         greeting.GreetingInner `yaml:"greeting"`
-	IdleTimeout      int                    `yaml:"idleTimeout"`
-	ReadTimeout      int                    `yaml:"readTimeout"`
-	WriteTimeout     int                    `yaml:"writeTimeout"`
-	ActiveSessionTtl int                    `yaml:"activeSessionTtl"`
+	ListenAddr        string                 `yaml:"listenAddr"`
+	Greeting          greeting.GreetingInner `yaml:"greeting"`
+	IdleTimeout       int                    `yaml:"idleTimeout"`
+	ReadTimeout       int                    `yaml:"readTimeout"`
+	WriteTimeout      int                    `yaml:"writeTimeout"`
+	ActiveSessionTtl  int                    `yaml:"activeSessionTtl"`
+	MinPasswordLength int                    `yaml:"minPasswordLength"`
 }
 
 func (e *Epp) Validate() error {
@@ -34,6 +35,10 @@ func (e *Epp) Validate() error {
 
 	if e.ActiveSessionTtl <= 0 {
 		e.ActiveSessionTtl = 3600
+	}
+
+	if e.MinPasswordLength < 8 {
+		e.MinPasswordLength = 8
 	}
 
 	if err := e.Greeting.Validate(); err != nil {

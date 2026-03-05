@@ -34,7 +34,7 @@ var (
 	PostgresPassword = "test"
 
 	testingRegistrarUsername = "test"
-	testingRegistrarPassword = "test"
+	testingRegistrarPassword = "testing-password"
 )
 
 func TestMain(m *testing.M) {

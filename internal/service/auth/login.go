@@ -1,7 +1,11 @@
 package auth
 
-import "context"
+import (
+	"context"
 
-func (s *Service) Login(ctx context.Context, username, psw string) (int64, int64, error) {
-	return s.repo.Login(ctx, username, psw)
+	"github.com/pixel365/goepp/command/login"
+)
+
+func (s *Service) Login(ctx context.Context, creds *login.Login) (int64, int64, error) {
+	return s.repo.Login(ctx, creds.ClientID, creds.Password, creds.NewPassword)
 }
