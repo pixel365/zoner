@@ -69,38 +69,30 @@ func (s *Service) Create(
 	}
 
 	var resp response.Marshaller
+	code := response.CodeCommandCompletedSuccessfully
 
 	contactId, err := s.repo.Create(ctx, contact)
 
 	switch {
 	case errors.Is(err, contactrepo.ErrAlreadyExists):
 		s.log.WithUserId(registrarId).Error("contact already exists error", err)
-		return response.AnyError(
-			response.CodeObjectExists,
-			response.MessageForCode(response.CodeObjectExists),
-		)
+		code = response.CodeObjectExists
+		return response.AnyError(code, code.String())
 	case errors.Is(err, contactrepo.ErrValidation):
 		s.log.WithUserId(registrarId).Error("contact validation error", err)
-		return response.AnyError(
-			response.CodeParameterValuePolicyError,
-			response.MessageForCode(response.CodeParameterValuePolicyError),
-		)
+		code = response.CodeParameterValuePolicyError
+		return response.AnyError(code, code.String())
 	case err != nil:
 		s.log.WithUserId(registrarId).Error("contact create error", err)
-		return response.AnyError(
-			response.CodeCommandFailed,
-			response.MessageForCode(response.CodeCommandFailed),
-		)
+		code = response.CodeCommandFailed
+		return response.AnyError(code, code.String())
 	}
 
 	data := ContactCreateResData{
 		ID:     contact.ContactID,
 		CRDate: time.Now().UTC().Format(time.RFC3339),
 	}
-	resp = response.NewResponse[ContactCreateResData, struct{}](
-		response.CodeCommandCompletedSuccessfully,
-		response.MessageForCode(response.CodeCommandCompletedSuccessfully),
-	).
+	resp = response.NewResponse[ContactCreateResData, struct{}](code, code.String()).
 		WithResData(data)
 
 	s.log.WithUserId(registrarId).Info("contact %s created", contactId)
