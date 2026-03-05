@@ -8,9 +8,9 @@ import (
 
 	"github.com/pixel365/goepp/command"
 	"github.com/pixel365/goepp/command/login"
+	"github.com/pixel365/goepp/response"
 
 	conn2 "github.com/pixel365/zoner/epp/server/conn"
-	"github.com/pixel365/zoner/epp/server/response"
 	errors2 "github.com/pixel365/zoner/internal/errors"
 	"github.com/pixel365/zoner/internal/observability/metrics"
 )

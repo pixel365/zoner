@@ -9,7 +9,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/pixel365/zoner/epp/server/response"
+	"github.com/pixel365/goepp/response"
+
 	"github.com/pixel365/zoner/internal/observability/metrics"
 )
 

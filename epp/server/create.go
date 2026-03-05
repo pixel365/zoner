@@ -6,8 +6,8 @@ import (
 
 	"github.com/pixel365/goepp/command"
 	"github.com/pixel365/goepp/command/create"
+	"github.com/pixel365/goepp/response"
 
-	"github.com/pixel365/zoner/epp/server/response"
 	"github.com/pixel365/zoner/internal/model"
 	"github.com/pixel365/zoner/internal/stringutils/password"
 

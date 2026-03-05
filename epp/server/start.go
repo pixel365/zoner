@@ -12,11 +12,11 @@ import (
 	"github.com/pixel365/goepp"
 	"github.com/pixel365/goepp/command"
 	"github.com/pixel365/goepp/command/greeting"
+	"github.com/pixel365/goepp/response"
 
 	"github.com/pixel365/zoner/internal/observability/metrics"
 
 	conn2 "github.com/pixel365/zoner/epp/server/conn"
-	"github.com/pixel365/zoner/epp/server/response"
 )
 
 var errSessionTerminate = errors.New("session terminate")

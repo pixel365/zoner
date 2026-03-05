@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/pixel365/goepp/response"
+
 	conn2 "github.com/pixel365/zoner/epp/server/conn"
-	"github.com/pixel365/zoner/epp/server/response"
 )
 
 func handleLogout(ctx context.Context, connection *conn2.Connection, e *Epp) error {
