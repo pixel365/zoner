@@ -95,7 +95,7 @@ func (s *Service) Create(
 	resp = response.NewResponse[ContactCreateResData, struct{}](code, code.String()).
 		WithResData(data)
 
-	s.log.WithUserId(registrarId).Info("contact %s created", contactId)
+	s.log.WithUserId(registrarId).Info("contact %d created", contactId)
 
 	return resp
 }

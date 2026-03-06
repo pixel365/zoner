@@ -73,30 +73,7 @@ func TestLoginValidCredentials(t *testing.T) {
 	_ = conn.SetDeadline(time.Now().Add(10 * time.Second))
 	_, _ = readEPPFrame(conn)
 
-	payload := fmt.Sprintf(`
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
-    <command>
-        <login>
-            <clID>%s</clID>
-            <pw>%s</pw>
-            <options>
-                <version>1.0</version>
-                <lang>en</lang>
-            </options>
-            <svcs>
-                <objURI>urn:ietf:params:xml:ns:obj1</objURI>
-                <objURI>urn:ietf:params:xml:ns:obj2</objURI>
-                <objURI>urn:ietf:params:xml:ns:obj3</objURI>
-                <svcExtension>
-                    <extURI>http://custom/obj1ext-1.0</extURI>
-                </svcExtension>
-            </svcs>
-        </login>
-        <clTRID>ABC-12345</clTRID>
-    </command>
-</epp>
-`, testingRegistrarUsername, testingRegistrarPassword)
+	payload := loginXML()
 
 	err = writeEPPFrame(conn, []byte(payload))
 	require.NoError(t, err)
@@ -123,30 +100,7 @@ func TestAlreadyLoggedIn(t *testing.T) {
 	_ = conn.SetDeadline(time.Now().Add(10 * time.Second))
 	_, _ = readEPPFrame(conn)
 
-	payload := fmt.Sprintf(`
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
-    <command>
-        <login>
-            <clID>%s</clID>
-            <pw>%s</pw>
-            <options>
-                <version>1.0</version>
-                <lang>en</lang>
-            </options>
-            <svcs>
-                <objURI>urn:ietf:params:xml:ns:obj1</objURI>
-                <objURI>urn:ietf:params:xml:ns:obj2</objURI>
-                <objURI>urn:ietf:params:xml:ns:obj3</objURI>
-                <svcExtension>
-                    <extURI>http://custom/obj1ext-1.0</extURI>
-                </svcExtension>
-            </svcs>
-        </login>
-        <clTRID>ABC-12345</clTRID>
-    </command>
-</epp>
-`, testingRegistrarUsername, testingRegistrarPassword)
+	payload := loginXML()
 
 	err = writeEPPFrame(conn, []byte(payload))
 	require.NoError(t, err)
@@ -156,30 +110,7 @@ func TestAlreadyLoggedIn(t *testing.T) {
 
 	assert.Contains(t, string(resp), "Command completed successfully")
 
-	payload = fmt.Sprintf(`
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
-    <command>
-        <login>
-            <clID>%s</clID>
-            <pw>%s</pw>
-            <options>
-                <version>1.0</version>
-                <lang>en</lang>
-            </options>
-            <svcs>
-                <objURI>urn:ietf:params:xml:ns:obj1</objURI>
-                <objURI>urn:ietf:params:xml:ns:obj2</objURI>
-                <objURI>urn:ietf:params:xml:ns:obj3</objURI>
-                <svcExtension>
-                    <extURI>http://custom/obj1ext-1.0</extURI>
-                </svcExtension>
-            </svcs>
-        </login>
-        <clTRID>ABC-12345</clTRID>
-    </command>
-</epp>
-`, testingRegistrarUsername, testingRegistrarPassword)
+	payload = loginXML()
 
 	err = writeEPPFrame(conn, []byte(payload))
 	require.NoError(t, err)

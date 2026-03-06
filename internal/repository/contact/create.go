@@ -41,7 +41,7 @@ INSERT INTO contacts (
                       fax,
                       auth_info_hash,
                       disclose
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb)
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING id
 `
 	var disclose any = struct{}{}

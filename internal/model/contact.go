@@ -17,7 +17,7 @@ type Disclose struct {
 }
 
 type ContactCreateInput struct {
-	Disclose     *Disclose
+	Disclose     *Disclose `json:",inline"`
 	ContactID    string
 	Name         string
 	Organization string
