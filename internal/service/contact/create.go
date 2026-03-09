@@ -18,6 +18,7 @@ func (s *Service) Create(
 	ctx context.Context,
 	payload create.Contact,
 	registrarId int64,
+	registrarName string,
 ) response.Marshaller {
 	passwordHash, _ := password.Hash(payload.AuthInfo.Password, password.DefaultParams)
 
@@ -33,15 +34,16 @@ func (s *Service) Create(
 	}
 
 	contact := model.ContactCreateInput{
-		ContactID:    payload.ID,
-		Name:         "",
-		Organization: "",
-		Email:        payload.Email,
-		Voice:        voice,
-		Fax:          fax,
-		AuthInfoHash: passwordHash,
-		Disclose:     nil,
-		RegistrarID:  registrarId,
+		ContactID:     payload.ID,
+		Name:          "",
+		Organization:  "",
+		Email:         payload.Email,
+		Voice:         voice,
+		Fax:           fax,
+		AuthInfoHash:  passwordHash,
+		Disclose:      nil,
+		RegistrarID:   registrarId,
+		RegistrarName: registrarName,
 	}
 
 	if len(payload.PostalInfo) > 0 {
@@ -70,7 +72,11 @@ func (s *Service) Create(
 		}
 		di := map[string]struct{}{}
 		for i := range payload.Disclose.Items {
-			di[payload.Disclose.Items[i].Name] = struct{}{}
+			field := payload.Disclose.Items[i].Name
+			if field == DiscloseAddr.String() && payload.Disclose.Items[i].Type != "" {
+				field += ":" + string(payload.Disclose.Items[i].Type)
+			}
+			di[field] = struct{}{}
 		}
 		for k := range di {
 			disclose.Fields = append(disclose.Fields, k)

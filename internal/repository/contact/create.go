@@ -40,8 +40,10 @@ INSERT INTO contacts (
                       voice,
                       fax,
                       auth_info_hash,
-                      disclose
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                      disclose,
+                      created_by_client_id,
+                      updated_by_client_id
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 RETURNING id
 `
 	var disclose any = struct{}{}
@@ -52,9 +54,21 @@ RETURNING id
 	b, _ := json.Marshal(disclose)
 
 	return func(tx pgx.Tx) error {
-		err := tx.QueryRow(ctx, sql,
-			data.ContactID, data.RegistrarID, data.Name, data.Email, data.Organization,
-			data.Voice, data.Fax, data.AuthInfoHash, b).Scan(contactId)
+		err := tx.QueryRow(
+			ctx,
+			sql,
+			data.ContactID,
+			data.RegistrarID,
+			data.Name,
+			data.Email,
+			data.Organization,
+			data.Voice,
+			data.Fax,
+			data.AuthInfoHash,
+			b,
+			data.RegistrarName,
+			data.RegistrarName,
+		).Scan(contactId)
 
 		if err == nil {
 			return nil

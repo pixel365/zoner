@@ -28,7 +28,12 @@ func handleCreate(
 	case data.Domain != nil:
 		return createDomain(ctx, connection, e, *data.Domain)
 	case data.Contact != nil:
-		resp = e.ContactService.Create(ctx, *data.Contact, connection.UserId())
+		resp = e.ContactService.Create(
+			ctx,
+			*data.Contact,
+			connection.UserId(),
+			connection.Username(),
+		)
 	default:
 		resp = response.AnyError(2101, response.UnimplementedCommand)
 	}
