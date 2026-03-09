@@ -8,4 +8,5 @@ import (
 
 type ContactRepository interface {
 	Create(context.Context, model.ContactCreateInput) (int64, error)
+	Check(context.Context, model.ContactsIdentifiersInput) ([]model.CheckedContact, error)
 }

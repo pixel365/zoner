@@ -3,6 +3,7 @@ package contact
 import (
 	"context"
 
+	"github.com/pixel365/goepp/command/check"
 	"github.com/pixel365/goepp/command/create"
 	"github.com/pixel365/goepp/response"
 
@@ -15,7 +16,7 @@ var _ ContactService = (*Service)(nil)
 
 type ContactService interface {
 	Info(context.Context) error
-	Check(context.Context) error
+	Check(context.Context, check.ContactCheck, int64) response.Marshaller
 	Create(context.Context, create.Contact, int64) response.Marshaller
 }
 

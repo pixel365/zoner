@@ -28,3 +28,13 @@ type ContactCreateInput struct {
 	PostalInfo   []ContactPostalFields
 	RegistrarID  int64
 }
+
+type ContactsIdentifiersInput struct {
+	Identifiers []string
+	RegistrarID int64
+}
+
+type CheckedContact struct {
+	ID        string
+	Available bool
+}

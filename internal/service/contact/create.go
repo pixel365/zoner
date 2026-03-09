@@ -21,13 +21,24 @@ func (s *Service) Create(
 ) response.Marshaller {
 	passwordHash, _ := password.Hash(payload.AuthInfo.Password, password.DefaultParams)
 
+	var voice string
+	var fax string
+
+	if payload.Voice != nil {
+		voice = payload.Voice.Num
+	}
+
+	if payload.Fax != nil {
+		fax = payload.Fax.Num
+	}
+
 	contact := model.ContactCreateInput{
 		ContactID:    payload.ID,
 		Name:         "",
 		Organization: "",
 		Email:        payload.Email,
-		Voice:        payload.Voice.Num,
-		Fax:          payload.Fax.Num,
+		Voice:        voice,
+		Fax:          fax,
 		AuthInfoHash: passwordHash,
 		Disclose:     nil,
 		RegistrarID:  registrarId,
