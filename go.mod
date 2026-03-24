@@ -6,7 +6,7 @@ require (
 	github.com/exaring/otelpgx v0.10.0
 	github.com/goccy/go-yaml v1.19.2
 	github.com/google/uuid v1.6.0
-	github.com/jackc/pgx/v5 v5.8.0
+	github.com/jackc/pgx/v5 v5.9.1
 	github.com/joho/godotenv v1.5.1
 	github.com/pixel365/goepp v0.0.7
 	github.com/pressly/goose/v3 v3.27.0
