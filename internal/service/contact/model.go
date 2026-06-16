@@ -341,7 +341,8 @@ func encodeContactAuthInfo(enc *xml.Encoder, authInfo *command.AuthInfo) error {
 	}
 
 	if authInfo.Password != "" {
-		if err := enc.EncodeElement(authInfo.Password, xml.StartElement{Name: xml.Name{Local: "contact:pw"}}); err != nil {
+		if err := enc.EncodeElement(authInfo.Password,
+			xml.StartElement{Name: xml.Name{Local: "contact:pw"}}); err != nil {
 			return err
 		}
 	}
