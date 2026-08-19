@@ -10,7 +10,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/pixel365/goepp v0.0.7
 	github.com/pressly/goose/v3 v3.27.3
-	github.com/redis/go-redis/extra/redisotel/v9 v9.21.0
+	github.com/redis/go-redis/extra/redisotel/v9 v9.22.0
 	github.com/redis/go-redis/v9 v9.22.0
 	github.com/rs/zerolog v1.35.1
 	github.com/spf13/cobra v1.10.2
@@ -73,7 +73,7 @@ require (
 	github.com/pixel365/domain-normalizer v0.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
-	github.com/redis/go-redis/extra/rediscmd/v9 v9.21.0 // indirect
+	github.com/redis/go-redis/extra/rediscmd/v9 v9.22.0 // indirect
 	github.com/sethvargo/go-retry v0.4.0 // indirect
 	github.com/shirou/gopsutil/v4 v4.26.7 // indirect
 	github.com/sirupsen/logrus v1.9.4 // indirect
