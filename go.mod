@@ -1,6 +1,6 @@
 module github.com/pixel365/zoner
 
-go 1.25.7
+go 1.26.0
 
 require (
 	github.com/exaring/otelpgx v0.11.1
@@ -23,7 +23,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.46.0
 	go.opentelemetry.io/otel/sdk v1.46.0
 	go.opentelemetry.io/otel/sdk/metric v1.46.0
-	golang.org/x/crypto v0.55.0
+	golang.org/x/crypto v0.56.0
 	google.golang.org/grpc v1.83.2
 )
 
